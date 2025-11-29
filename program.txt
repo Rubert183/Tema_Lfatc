@@ -1,0 +1,12 @@
+myClass
+{
+    int varsta,
+    int cnp,
+    string name
+}
+
+int myFunc(){}
+
+int main(){
+    
+}
