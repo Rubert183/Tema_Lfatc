@@ -1,12 +1,16 @@
-myClass
+class myClass
 {
     int varsta,
-    int cnp,
-    string name
-}
+    string nume,
+    float ceva(int a,int b){},
+    int val
+};
 
-int myFunc(){}
+int myFunc(){
 
-int main(){
-    
+};
+
+main(){
+
+
 }
