@@ -52,7 +52,7 @@ top_level :
           | top_level top_level_decl
           ;
 
-top_level_decl : class
+top_level_decl : class 
                | func
                | var 
                ;
@@ -64,7 +64,7 @@ func: TYPE ID '(' opt_param_list ')' '{' code_block '}' ';'
     ;
 
 opt_param_list : 
-               | param_list
+               | param_list 
                ;
 
 param_list : param
@@ -101,7 +101,8 @@ void yyerror(const char * s){
 
 int main(int argc, char** argv){
      yyin=fopen(argv[1],"r");
-     current = new SymTable("global");
+     const string global="global";
+     current = new SymTable(global);
      yyparse();
      //cout << "Variables:" <<endl;
      //current->printVars();
