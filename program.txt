@@ -1,11 +1,18 @@
-myClass
+class myClass
 {
-    int varsta,
-    int cnp,
-    string name
+    int varsta;
+    int cnp;
+    string name;
 }
 
-int myFunc(){}
+int myFunc(int age,string name){}
+
+class Elev
+{
+    int varsta;
+    int cnp;
+    string nume;
+}
 
 int main(){
     
