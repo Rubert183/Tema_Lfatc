@@ -6,6 +6,9 @@
 %option noyywrap
 %%
 "int"|"float"|"bool"|"string" {yylval.strVal = new std::string(yytext); return TYPE;}
+"return" {return RETURN;}
+"true" {return TRU;}
+"false" {return FLS;}
 "main" {return MAIN_MK;}
 "class" {return CLASS_MK;}
 "if" { return IF; }
