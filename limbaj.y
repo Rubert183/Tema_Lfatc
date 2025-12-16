@@ -90,6 +90,7 @@ class_list : field
            ;
 
 field : TYPE ID
+      | ID ID 
       ;
 
 method : TYPE ID '(' opt_param_list ')' '{' code_block '}'
