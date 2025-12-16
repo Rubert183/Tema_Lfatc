@@ -1,6 +1,10 @@
 class PI {
     int get_pi(){
         return 3.14;
+    },
+    PI new_pi(){
+        PI rez;
+        return rez;
     }
 };
 

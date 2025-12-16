@@ -65,6 +65,7 @@ var : TYPE list_var ';'
     ;
 
 func: TYPE ID '(' opt_param_list ')' '{' code_block '}' ';'
+    | ID ID '(' opt_param_list ')' '{' code_block '}' ';'
     ;
 
 opt_param_list : 
@@ -92,6 +93,7 @@ field : TYPE ID
       ;
 
 method : TYPE ID '(' opt_param_list ')' '{' code_block '}'
+       | ID ID '(' opt_param_list ')' '{' code_block '}'
        ;
 
 main : TYPE MAIN_MK '(' ')' '{' code_block_no_definitions '}'
@@ -143,6 +145,7 @@ func_call : ID '(' call_param_list ')'
           ;
 
 class_element : ID '.' ID 
+              | ID '.' class_element
               ;
 
 method_call : class_element '(' call_param_list ')'
