@@ -63,21 +63,25 @@ extern int yydebug;
     YYUNDEF = 257,                 /* "invalid token"  */
     CLASS_MK = 258,                /* CLASS_MK  */
     MAIN_MK = 259,                 /* MAIN_MK  */
-    ASSIGN = 260,                  /* ASSIGN  */
-    EQ = 261,                      /* EQ  */
-    LE = 262,                      /* LE  */
-    GE = 263,                      /* GE  */
-    LT = 264,                      /* LT  */
-    GT = 265,                      /* GT  */
-    NR = 266,                      /* NR  */
-    IF = 267,                      /* IF  */
-    WHILE = 268,                   /* WHILE  */
-    ELSE = 269,                    /* ELSE  */
-    INT_CONST = 270,               /* INT_CONST  */
-    FLOAT_CONST = 271,             /* FLOAT_CONST  */
-    STRING_CONST = 272,            /* STRING_CONST  */
-    ID = 273,                      /* ID  */
-    TYPE = 274                     /* TYPE  */
+    RETURN = 260,                  /* RETURN  */
+    ASSIGN = 261,                  /* ASSIGN  */
+    EQ = 262,                      /* EQ  */
+    NEQ = 263,                     /* NEQ  */
+    LE = 264,                      /* LE  */
+    GE = 265,                      /* GE  */
+    LT = 266,                      /* LT  */
+    GT = 267,                      /* GT  */
+    NR = 268,                      /* NR  */
+    IF = 269,                      /* IF  */
+    WHILE = 270,                   /* WHILE  */
+    ELSE = 271,                    /* ELSE  */
+    TRU = 272,                     /* TRU  */
+    FLS = 273,                     /* FLS  */
+    INT_CONST = 274,               /* INT_CONST  */
+    FLOAT_CONST = 275,             /* FLOAT_CONST  */
+    STRING_CONST = 276,            /* STRING_CONST  */
+    ID = 277,                      /* ID  */
+    TYPE = 278                     /* TYPE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -98,7 +102,7 @@ union YYSTYPE
         std::string* s;
     } *expr;
 
-#line 102 "limbaj.tab.h"
+#line 106 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

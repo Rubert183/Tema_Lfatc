@@ -6,13 +6,17 @@
 %option noyywrap
 %%
 "int"|"float"|"bool"|"string" {yylval.strVal = new std::string(yytext); return TYPE;}
-"main" {return MAIN_MK;}
-"class" {return CLASS_MK;}
+"return" { return RETURN;}
+"true" { return TRU;}
+"false" { return FLS;}
+"main" { return MAIN_MK;}
+"class" { return CLASS_MK;}
 "if" { return IF; }
 "while" { return WHILE; }
 "else" { return ELSE; }
 [a-zA-Z][a-zA-Z0-9]* {yylval.strVal = new std::string(yytext); return ID;}
-":=" {return ASSIGN;}
+":=" { return ASSIGN;}
+"!=" { return NEQ; }
 "==" { return EQ; }
 "<=" { return LE; }
 ">=" { return GE; }

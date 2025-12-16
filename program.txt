@@ -1,16 +1,32 @@
-class myClass
+class Math
 {
     int varsta,
     string nume,
-    float ceva(int a,int b){},
-    int val
+    float pi(){
+        return 3.14;
+    },
+    float e,
+    int cmmdc(int a,int b){
+        int r;
+        while(b!=0){
+            r:=a%b;
+            a:=b;
+            b:=r;
+        }
+        return a;
+    }
 };
 
-int myFunc(){
+int rez;
+int a;
+int b;
+Math m;
 
-};
-
-main(){
-
+int main(){
+    m.e:=2.32;
+    a:=6;
+    b:=3;
+    rez:=m.cmmdc(a,b);
+    return rez;
 
 }
