@@ -1,10 +1,12 @@
+class PI {
+    int get_pi(){
+        return 3.14;
+    }
+};
+
 class Math
 {
-    int varsta,
-    string nume,
-    float pi(){
-        return 3.14;
-    },
+    float pi,
     float e,
     int cmmdc(int a,int b){
         int r;
@@ -17,16 +19,16 @@ class Math
     }
 };
 
-int rez;
-int a;
-int b;
+float rez;
+int a, b;
 Math m;
+PI p;
 
-int main(){
-    m.e:=2.32;
-    a:=6;
-    b:=3;
-    rez:=m.cmmdc(a,b);
+float main(){
+    m.pi := p.getpi();
+    a := 6;
+    b := 4 + 3;
+    rez := m.pi + 4.301 - m.cmmdc(a,b);
+    Print("Rezultatul este: ", rez );
     return rez;
-
 }

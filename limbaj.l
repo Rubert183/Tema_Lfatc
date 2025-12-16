@@ -14,7 +14,8 @@
 "if" { return IF; }
 "while" { return WHILE; }
 "else" { return ELSE; }
-[a-zA-Z][a-zA-Z0-9]* {yylval.strVal = new std::string(yytext); return ID;}
+"Print" { return PRINT; }
+[a-zA-Z][a-zA-Z0-9_]* {yylval.strVal = new std::string(yytext); return ID;}
 ":=" { return ASSIGN;}
 "!=" { return NEQ; }
 "==" { return EQ; }
@@ -22,8 +23,10 @@
 ">=" { return GE; }
 "<"  { return LT; }
 ">"  { return GT; }
-[0-9]+ { yylval.intVal = atoi(yytext); return INT_CONST; }
-[0-9]+\.[0-9]+ { yylval.floatVal = atof(yytext); return FLOAT_CONST; }
+0 { yylval.intVal = atoi(yytext); return INT_CONST; }
+"-"?[1-9][0-9]* { yylval.intVal = atoi(yytext); return INT_CONST; }
+"-"?0\.[0-9]+ { yylval.floatVal = atof(yytext); return FLOAT_CONST; }
+"-"?[1-9][0-9]*\.[0-9]+ { yylval.floatVal = atof(yytext); return FLOAT_CONST; }
 \"[^\"]*\" { yylval.strVal = new std::string(yytext+1, strlen(yytext)-2); return STRING_CONST; }
 [ \t] ;
 \n {yylineno++;}
