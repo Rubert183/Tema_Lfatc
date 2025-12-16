@@ -31,7 +31,7 @@ int errorCount = 0;
 //%destructor { delete $$; } <Str> 
 
 %token CLASS_MK MAIN_MK RETURN
-%token ASSIGN EQ LE GE LT GT NR 
+%token ASSIGN EQ NEQ LE GE LT GT NR 
 %token IF WHILE ELSE TRU FLS
 %token <intVal> INT_CONST
 %token <floatVal> FLOAT_CONST
@@ -40,7 +40,7 @@ int errorCount = 0;
 %start progr
 
 %left '+' '-' 
-%left '*' '/'
+%left '*' '/' '%'
 
 
 
@@ -58,6 +58,7 @@ top_level_decl : class
                ;
 
 var : TYPE ID ';'
+    | ID ID ';'
     ;
 
 func: TYPE ID '(' opt_param_list ')' '{' code_block '}' ';'
@@ -89,7 +90,7 @@ field : TYPE ID
 method : TYPE ID '(' opt_param_list ')' '{' code_block '}'
        ;
 
-main : MAIN_MK '(' ')' '{' code_block_no_definitions '}'
+main : TYPE MAIN_MK '(' ')' '{' code_block_no_definitions '}'
      ;
 
 code_block_no_definitions : 
@@ -98,7 +99,7 @@ code_block_no_definitions :
                           | func_call ';' code_block_no_definitions
                           | method_call ';' code_block_no_definitions
                           | while_loop code_block_no_definitions
-                          | assign_operation ';' code_block_no_definitions
+                          | assign_statement ';' code_block_no_definitions
                           | return_val ';'
                           | return_nothing ';'
                           ;
@@ -109,7 +110,7 @@ code_block :
            | func_call ';' code_block
            | method_call ';' code_block
            | while_loop code_block
-           | assign_operation ';' code_block
+           | assign_statement ';' code_block
            | var_definition code_block
            | return_nothing ';'
            | return_val ';'
@@ -124,14 +125,14 @@ if_st : IF '(' logic_expression ')' '{' code_block_no_definitions '}'
 func_call : ID '(' call_param_list ')'
           ;
 
-method_call : ID '\.' ID '(' call_param_list ')'
+method_call : ID '.' ID '(' call_param_list ')'
             ;
 
 while_loop : WHILE '(' logic_expression ')' '{' code_block_no_definitions '}'
            ;
 
-assign_operation : ID ASSIGN expression
-                 : ID ASSIGN logic_expression
+assign_statement : ID ASSIGN logic_expression
+                 | ID ASSIGN expression
                  ;
 
 return_val : RETURN any_value
@@ -160,17 +161,26 @@ any_value_no_bool_const : func_call
                         | FLOAT_CONST
                         ;
 
-logic_expression : logic_expression LT logic_expression
-                 | logic_expression GT logic_expression
-                 | logic_expression LE logic_expression
-                 | logic_expression GE logic_expression
-                 | any_value
-                 ;
+logic_expression
+    : expression bool_operator expression
+    | TRU
+    | FLS
+    ;
+
+bool_operator
+    : LT
+    | EQ
+    | NEQ
+    | GT
+    | LE
+    | GE
+    ;
 
 expression : expression '+' expression
            | expression '-' expression
            | expression '/' expression
            | expression '*' expression
+           | expression '%' expression
            | any_value_no_bool_const
            ;
 
