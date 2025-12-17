@@ -73,16 +73,19 @@ extern int yydebug;
     LT = 267,                      /* LT  */
     GT = 268,                      /* GT  */
     NR = 269,                      /* NR  */
-    IF = 270,                      /* IF  */
-    WHILE = 271,                   /* WHILE  */
-    ELSE = 272,                    /* ELSE  */
-    TRU = 273,                     /* TRU  */
-    FLS = 274,                     /* FLS  */
-    INT_CONST = 275,               /* INT_CONST  */
-    FLOAT_CONST = 276,             /* FLOAT_CONST  */
-    STRING_CONST = 277,            /* STRING_CONST  */
-    ID = 278,                      /* ID  */
-    TYPE = 279                     /* TYPE  */
+    NOT = 270,                     /* NOT  */
+    AND = 271,                     /* AND  */
+    OR = 272,                      /* OR  */
+    IF = 273,                      /* IF  */
+    WHILE = 274,                   /* WHILE  */
+    ELSE = 275,                    /* ELSE  */
+    TRU = 276,                     /* TRU  */
+    FLS = 277,                     /* FLS  */
+    INT_CONST = 278,               /* INT_CONST  */
+    FLOAT_CONST = 279,             /* FLOAT_CONST  */
+    STRING_CONST = 280,            /* STRING_CONST  */
+    ID = 281,                      /* ID  */
+    TYPE = 282                     /* TYPE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -103,7 +106,7 @@ union YYSTYPE
         std::string* s;
     } *expr;
 
-#line 107 "limbaj.tab.h"
+#line 110 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

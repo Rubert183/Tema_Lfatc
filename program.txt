@@ -24,25 +24,40 @@ class Math
     float e,
     int cmmdc(int a,int b){
         int r;
-        while(b!=0){
+        while(a*2==2){
             r:=a%b;
             a:=b;
             b:=r;
+            if(b==0){
+                return a;
+            }
         }
         return a;
     }
 };
 
 float rez;
+
+float calc(int a,int b, Math m1, Math m2){
+    rez := m2.pi.get_pi() + 4.301 - m1.cmmdc(a,b);
+    return rez;
+};
+
 int a, b;
 Math m1,m2;
 PI p;
 
-float main(){
+main{
     m2.pi := p.new_pi();
     a := 6;
+    a:= f(g(a+b(c+g.b-cv.func(f(f(f(a && b), a%2==1)) <= (A+B))))) + c;
+    f(not f(a+b));
+    Print(a+n);
+    if (not not not (not (a == 1))) {
+        Print(a-b);
+        Print("Ana are mere multe rau de tot");
+    }
     b := 4 + 3;
-    rez := m2.pi.get_pi() + 4.301 - m1.cmmdc(a,b);
-    Print("Rezultatul este: ", rez );
-    return rez;
+    f(5);
+    rez:=calc(a,b,m1,m2);
 }

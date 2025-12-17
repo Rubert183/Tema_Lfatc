@@ -15,6 +15,7 @@
 "while" { return WHILE; }
 "else" { return ELSE; }
 "Print" { return PRINT; }
+"not" { return NOT; }
 [a-zA-Z][a-zA-Z0-9_]* {yylval.strVal = new std::string(yytext); return ID;}
 ":=" { return ASSIGN;}
 "!=" { return NEQ; }
@@ -23,6 +24,8 @@
 ">=" { return GE; }
 "<"  { return LT; }
 ">"  { return GT; }
+"&&" { return AND; }
+"||" { return OR; }
 0 { yylval.intVal = atoi(yytext); return INT_CONST; }
 "-"?[1-9][0-9]* { yylval.intVal = atoi(yytext); return INT_CONST; }
 "-"?0\.[0-9]+ { yylval.floatVal = atof(yytext); return FLOAT_CONST; }
