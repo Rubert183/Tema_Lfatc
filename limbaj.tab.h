@@ -63,25 +63,29 @@ extern int yydebug;
     YYUNDEF = 257,                 /* "invalid token"  */
     CLASS_MK = 258,                /* CLASS_MK  */
     MAIN_MK = 259,                 /* MAIN_MK  */
-    RETURN = 260,                  /* RETURN  */
-    ASSIGN = 261,                  /* ASSIGN  */
-    EQ = 262,                      /* EQ  */
-    NEQ = 263,                     /* NEQ  */
-    LE = 264,                      /* LE  */
-    GE = 265,                      /* GE  */
-    LT = 266,                      /* LT  */
-    GT = 267,                      /* GT  */
-    NR = 268,                      /* NR  */
-    IF = 269,                      /* IF  */
-    WHILE = 270,                   /* WHILE  */
-    ELSE = 271,                    /* ELSE  */
-    TRU = 272,                     /* TRU  */
-    FLS = 273,                     /* FLS  */
-    INT_CONST = 274,               /* INT_CONST  */
-    FLOAT_CONST = 275,             /* FLOAT_CONST  */
-    STRING_CONST = 276,            /* STRING_CONST  */
-    ID = 277,                      /* ID  */
-    TYPE = 278                     /* TYPE  */
+    PRINT = 260,                   /* PRINT  */
+    RETURN = 261,                  /* RETURN  */
+    ASSIGN = 262,                  /* ASSIGN  */
+    EQ = 263,                      /* EQ  */
+    NEQ = 264,                     /* NEQ  */
+    LE = 265,                      /* LE  */
+    GE = 266,                      /* GE  */
+    LT = 267,                      /* LT  */
+    GT = 268,                      /* GT  */
+    NR = 269,                      /* NR  */
+    NOT = 270,                     /* NOT  */
+    AND = 271,                     /* AND  */
+    OR = 272,                      /* OR  */
+    IF = 273,                      /* IF  */
+    WHILE = 274,                   /* WHILE  */
+    ELSE = 275,                    /* ELSE  */
+    TRU = 276,                     /* TRU  */
+    FLS = 277,                     /* FLS  */
+    INT_CONST = 278,               /* INT_CONST  */
+    FLOAT_CONST = 279,             /* FLOAT_CONST  */
+    STRING_CONST = 280,            /* STRING_CONST  */
+    ID = 281,                      /* ID  */
+    TYPE = 282                     /* TYPE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -102,7 +106,7 @@ union YYSTYPE
         std::string* s;
     } *expr;
 
-#line 106 "limbaj.tab.h"
+#line 110 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

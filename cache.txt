@@ -196,41 +196,43 @@ any_value_no_bool_const : func_call
                         | FLOAT_CONST
                         ;
 
-/*any_not_const : func_call
+any_not_const : func_call
               | method_call
               | class_element
               | ID
-              ;*/
+              ;
 
-logic_expression : logic_expression OR logic_and
-                 | logic_and
-                 ;
+form_expression : '(' expression ')'
+                | expression
+                ;
 
-logic_and : logic_and AND logic_not
-          | logic_not
-          ;
-
-logic_not : NOT logic_not
-          | logic_atom
-          ;
-
-logic_atom
-    : '(' logic_expression ')'
-    | expression expression_comparisom expression
+logic_expression
+    : '(' logic_expression ')' logic_bool_operator '(' logic_expression ')'
+    | form_expression bool_operator form_expression
+    | NOT logic_expression
+    | NOT '(' logic_expression ')'
+    | NOT any_not_const
     | TRU
     | FLS
     ;
 
-expression_comparisom : LT
-                      | EQ
-                      | NEQ
-                      | GT
-                      | LE
-                      | GE
-                      ;
+logic_bool_operator: EQ
+                   | NEQ
+                   | OR
+                   | AND
+                   ;
+bool_operator
+    : LT
+    | EQ
+    | NEQ
+    | GT
+    | LE
+    | GE
+    | AND
+    | OR
+    ;
 
-expression : '(' expression ')' 
-           | expression '+' expression
+expression : expression '+' expression
            | expression '-' expression
            | expression '/' expression
            | expression '*' expression
