@@ -1,45 +1,54 @@
-#include <iostream>
-#include <map>
 #include <string>
+#include <map>
 #include <vector>
-#include <iterator>
+#include <iostream>
 
 using namespace std;
-enum SymKind{
-    VAR,
-    FUNCTION,
-    PARAM,
-    CLASS,
-    FIELD,
-    METHOD
-};
+
 class SymTable;
-class SymInfo {
-    public:
-    SymKind kind;
-    string type;
+
+class IdInfo {
+public:
     string name;
-    SymTable *inner_scope;
-    SymInfo();
-    SymInfo(const SymKind kind,const string& type,const string& name);
-    ~SymInfo();
+    string type;
+
+    vector<string> params;
+    SymTable* function_scope = nullptr;
+
+    SymTable* class_scope = nullptr;
+
+    IdInfo() = default;
+    IdInfo(const string& name, const string& type)
+        : name(name), type(type) {}
 };
 
 class SymTable {
+private:
+    string name;
     SymTable* parent;
-    map<string, SymInfo*> symbols;
-    string scopeName;
-    public:
-    SymTable(const string& scope_name, SymTable* parent = nullptr);
-    bool exists(const string& sym_name);
-    void add(SymInfo *info);
-    SymTable* get_parent();
-    SymInfo* lookup(const string& name);
-    ~SymTable();
+
+    map<string, IdInfo> variables;
+    map<string, IdInfo> functions;
+    map<string, IdInfo> classes;
+
+public:
+    SymTable(const string& name, SymTable* parent = nullptr);
+
+    void addVar(const string& type, const string& name);
+    void addFunction(const string& type,const string& name,const vector<string>& params = {});
+    void addClass(const string& name);
+
+    bool existsVar(const string& name) const;
+    bool existsFunction(const string& name) const;
+    bool existsClass(const string& name) const;
+
+    const IdInfo* getVar(const string& name) const;
+    const IdInfo* getFunction(const string& name) const;
+    const IdInfo* getClass(const string& name) const;
+
+    SymTable* getClassScope(const string& className);
+    SymTable* getFunctionScope(const string& funcName);
+
+    SymTable* getParent() const { return parent; }
 };
-
-
-
-
-
 

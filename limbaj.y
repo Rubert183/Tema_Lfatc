@@ -1,4 +1,3 @@
-
 %code requires {
   #include <string>
   using namespace std;
