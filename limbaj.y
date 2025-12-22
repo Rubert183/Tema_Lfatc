@@ -12,6 +12,8 @@ extern int yylineno;
 extern int yylex();
 void yyerror(const char * s);
 class SymTable* current;
+string currentType;
+IdInfo *currentIdInfo;
 int errorCount = 0;
 %}
 
@@ -55,16 +57,88 @@ top_level_decl : class
                | func
                | var 
                ;
-list_var : ID
-         | ID ',' list_var
+
+list_var : ID {
+             if(current->existsClass(*$1)){
+                 cout << "Variable " << *$1 << " has the name of a class at line " << yylineno << endl;
+                 errorCount++;
+             } else {
+                if(current->existsFunction(*$1)){
+                    cout << "Variable " << *$1 << " has the name of a function at line " << yylineno << endl;
+                    errorCount++;
+                }
+                else{
+                    if(current->existsVar(*$1)){
+                        cout << "Redeclared variable " << *$1 << " at line " << yylineno << endl;
+                        errorCount++;
+                    } else {
+                        current->addVar(currentType, *$1);
+                    }
+                }
+             }
+             
+         }
+         | ID {
+             if(current->existsClass(*$1)){
+                 cout << "Variable " << *$1 << " has the name of a class at line " << yylineno << endl;
+                 errorCount++;
+             } else {
+                if(current->existsFunction(*$1)){
+                    cout << "Variable " << *$1 << " has the name of a function at line " << yylineno << endl;
+                    errorCount++;
+                }
+                else{
+                    if(current->existsVar(*$1)){
+                        cout << "Redeclared variable " << *$1 << " at line " << yylineno << endl;
+                        errorCount++;
+                    } else {
+                        current->addVar(currentType, *$1);
+                    }
+                }
+             }
+             
+         } ',' list_var
          ;
 
-var : TYPE list_var ';'
-    | ID list_var ';'
+type_or_class : TYPE {currentType=*$1;}
+              | ID {
+                if(!current->existsClass(*$1)){
+                 cout << "Undeclared class " << *$1 << " at line " << yylineno << endl;
+                 errorCount++;
+                }
+                currentType=*$1;
+              }
+              ;
+
+var : type_or_class list_var ';'
     ;
 
-func: TYPE ID '(' opt_param_list ')' '{' code_block '}' ';'
-    | ID ID '(' opt_param_list ')' '{' code_block '}' ';'
+func: type_or_class ID {
+             if(current->existsClass(*$2)){
+                 cout << "Function " << *$2 << " has the name of a class at line " << yylineno << endl;
+                 errorCount++;
+             } else {
+                if(current->existsVar(*$2)){
+                    cout << "Function " << *$2 << " has the name of a variable at line " << yylineno << endl;
+                    errorCount++;
+                }
+                else{
+                    if(current->existsFunction(*$2)){
+                        cout << "Redeclared function " << *$2 << " at line " << yylineno << endl;
+                        errorCount++;
+                    } else {
+                        current->addFunction(currentType, *$2);
+                        SymTable* funcScope = new SymTable(*$2, current);
+                        currentIdInfo=current->getFunction(*$2);
+                        currentIdInfo->function_scope = funcScope;
+                        current = current->getFunctionScope(*$2);
+                    }
+                }
+             }
+             
+         } '(' opt_param_list ')' '{' code_block '}' { 
+            current=current->getParent();
+         }';'
     ;
 
 opt_param_list : 
@@ -75,11 +149,47 @@ param_list : param
            | param_list ','  param 
            ;
 
-param : TYPE ID 
-      | ID ID
+param : type_or_class ID {
+             if(current->existsClass(*$2)){
+                 cout << "Parameter " << *$2 << " has the name of a class at line " << yylineno << endl;
+                 errorCount++;
+             } else {
+                if(current->existsFunction(*$2)){
+                    cout << "Parameter " << *$2 << " has the name of a function at line " << yylineno << endl;
+                    errorCount++;
+                }
+                else{
+                    if(current->existsVar(*$2)){
+                        cout << "Redeclared Parameter " << *$2 << " at line " << yylineno << endl;
+                        errorCount++;
+                    } else {
+                        currentIdInfo->add_param(currentType,*$2);
+                        current->addVar(currentType, *$2);
+                    }
+                }
+             }
+             
+         }
       ; 
 
-class : CLASS_MK ID '{' class_list '}' ';'
+class : CLASS_MK ID {
+    string className = *$2;
+        if(current->existsVar(className)){
+            cout << "Class " << className << " has the name of a variable at line " << yylineno << endl;
+            errorCount++;
+        } else if(current->existsFunction(className)){
+            cout << "Class " << className << " has the name of a function at line " << yylineno << endl;
+            errorCount++;
+        } else if(current->existsClass(className)){
+            cout << "Redeclared class " << className << " at line " << yylineno << endl;
+            errorCount++;
+        } else {
+            current->addClass(className);
+            SymTable* classScope = new SymTable(className, current);
+            current->getClass(className)->class_scope = classScope;
+            current = classScope;
+        }
+      } '{' class_list '}' {current=current->getParent();} ';'
       ;
 
 class_list : field
@@ -88,12 +198,44 @@ class_list : field
            | class_list ',' method
            ;
 
-field : TYPE ID
-      | ID ID 
+field : type_or_class ID {
+        string fieldName = *$2;
+        if(current->existsClass(fieldName)){
+            cout << "Field " << fieldName << " has the name of a class at line " << yylineno << endl;
+            errorCount++;
+        } else if(current->existsFunction(fieldName)){
+            cout << "Field " << fieldName << " has the name of a function at line " << yylineno << endl;
+            errorCount++;
+        } else if(current->existsVar(fieldName)){
+            cout << "Redeclared field " << fieldName << " at line " << yylineno << endl;
+            errorCount++;
+        } else {
+            current->addVar(currentType, fieldName); 
+        }
+    }   
       ;
 
-method : TYPE ID '(' opt_param_list ')' '{' code_block '}'
-       | ID ID '(' opt_param_list ')' '{' code_block '}'
+method : type_or_class ID {
+    string methodName = *$2;
+    if(current->existsClass(methodName)){
+        cout << "Method " << methodName << " has the name of a class at line " << yylineno << endl;
+        errorCount++;
+    } else if(current->existsVar(methodName)){
+        cout << "Method " << methodName << " has the name of a variable at line " << yylineno << endl;
+        errorCount++;
+    } else if(current->existsFunction(methodName)){
+        cout << "Redeclared method " << methodName << " at line " << yylineno << endl;
+        errorCount++;
+    } else {
+        current->addFunction(currentType, methodName);
+        SymTable* methodScope = new SymTable(methodName, current);
+        currentIdInfo = current->getFunction(methodName);
+        currentIdInfo->function_scope = methodScope;
+        current = methodScope;
+    }
+    } '(' opt_param_list ')' '{' code_block '}' {
+        current = current->getParent();
+    }
        ;
 
 main : MAIN_MK '{' main_code_block '}'

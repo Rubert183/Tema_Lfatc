@@ -8,11 +8,11 @@ void SymTable::addVar(const string& type, const string& name) {
     variables[name] = IdInfo(name, type);
 }
 
-void SymTable::addFunction(const string& type,const string& name,const vector<string>& params) {
+void SymTable::addFunction(const string& type,const string& name,const vector<pair<string,string>>& params) {
     IdInfo f(name, type);
     f.params = params;
 
-    f.function_scope = new SymTable("func_" + name, this);
+    f.function_scope = new SymTable(name, this);
 
     functions[name] = f;
 }
@@ -20,7 +20,7 @@ void SymTable::addFunction(const string& type,const string& name,const vector<st
 void SymTable::addClass(const string& name) {
     IdInfo cls(name, name);
 
-    cls.class_scope = new SymTable("class_" + name, this);
+    cls.class_scope = new SymTable(name, this);
 
     classes[name] = cls;
 }
@@ -43,21 +43,21 @@ bool SymTable::existsClass(const string& name) const {
     return parent ? parent->existsClass(name) : false;
 }
 
-const IdInfo* SymTable::getVar(const string& name) const {
+IdInfo* SymTable::getVar(const string& name){
     auto it = variables.find(name);
     if (it != variables.end())
         return &it->second;
     return parent ? parent->getVar(name) : nullptr;
 }
 
-const IdInfo* SymTable::getFunction(const string& name) const {
+IdInfo* SymTable::getFunction(const string& name){
     auto it = functions.find(name);
     if (it != functions.end())
         return &it->second;
     return parent ? parent->getFunction(name) : nullptr;
 }
 
-const IdInfo* SymTable::getClass(const string& name) const {
+IdInfo* SymTable::getClass(const string& name){
     auto it = classes.find(name);
     if (it != classes.end())
         return &it->second;
