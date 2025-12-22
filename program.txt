@@ -1,6 +1,12 @@
 int a,b;
 
-int my_func(int ab,float bb){
+class MyClass{
+    int a
+};
+
+
+
+int my_func(int a,float bb){
     int a_local;
 };
 

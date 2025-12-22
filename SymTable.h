@@ -45,6 +45,10 @@ public:
     bool existsFunction(const string& name) const;
     bool existsClass(const string& name) const;
 
+    bool existsVar_current(const string& name) const;
+    bool existsFunction_current(const string& name) const;
+    bool existsClass_current(const string& name) const;
+
     IdInfo* getVar(const string& name);
     IdInfo* getFunction(const string& name);
     IdInfo* getClass(const string& name);

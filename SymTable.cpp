@@ -43,6 +43,24 @@ bool SymTable::existsClass(const string& name) const {
     return parent ? parent->existsClass(name) : false;
 }
 
+bool SymTable::existsVar_current(const string& name) const {
+    if (variables.count(name))
+        return true;
+    return false;
+}
+
+bool SymTable::existsFunction_current(const string& name) const {
+    if (functions.count(name))
+        return true;
+    return false;
+}
+
+bool SymTable::existsClass_current(const string& name) const {
+    if (classes.count(name))
+        return true;
+    return false;
+}
+
 IdInfo* SymTable::getVar(const string& name){
     auto it = variables.find(name);
     if (it != variables.end())

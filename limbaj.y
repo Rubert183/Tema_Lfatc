@@ -68,7 +68,7 @@ list_var : ID {
                     errorCount++;
                 }
                 else{
-                    if(current->existsVar(*$1)){
+                    if(current->existsVar_current(*$1)){
                         cout << "Redeclared variable " << *$1 << " at line " << yylineno << endl;
                         errorCount++;
                     } else {
@@ -88,7 +88,7 @@ list_var : ID {
                     errorCount++;
                 }
                 else{
-                    if(current->existsVar(*$1)){
+                    if(current->existsVar_current(*$1)){
                         cout << "Redeclared variable " << *$1 << " at line " << yylineno << endl;
                         errorCount++;
                     } else {
@@ -118,7 +118,7 @@ func: type_or_class ID {
                  cout << "Function " << *$2 << " has the name of a class at line " << yylineno << endl;
                  errorCount++;
              } else {
-                if(current->existsVar(*$2)){
+                if(current->existsVar_current(*$2)){
                     cout << "Function " << *$2 << " has the name of a variable at line " << yylineno << endl;
                     errorCount++;
                 }
@@ -154,12 +154,12 @@ param : type_or_class ID {
                  cout << "Parameter " << *$2 << " has the name of a class at line " << yylineno << endl;
                  errorCount++;
              } else {
-                if(current->existsFunction(*$2)){
+                if(current->existsFunction_current(*$2)){
                     cout << "Parameter " << *$2 << " has the name of a function at line " << yylineno << endl;
                     errorCount++;
                 }
                 else{
-                    if(current->existsVar(*$2)){
+                    if(current->existsVar_current(*$2)){
                         cout << "Redeclared Parameter " << *$2 << " at line " << yylineno << endl;
                         errorCount++;
                     } else {
@@ -203,10 +203,10 @@ field : type_or_class ID {
         if(current->existsClass(fieldName)){
             cout << "Field " << fieldName << " has the name of a class at line " << yylineno << endl;
             errorCount++;
-        } else if(current->existsFunction(fieldName)){
+        } else if(current->existsFunction_current(fieldName)){
             cout << "Field " << fieldName << " has the name of a function at line " << yylineno << endl;
             errorCount++;
-        } else if(current->existsVar(fieldName)){
+        } else if(current->existsVar_current(fieldName)){
             cout << "Redeclared field " << fieldName << " at line " << yylineno << endl;
             errorCount++;
         } else {
@@ -220,10 +220,10 @@ method : type_or_class ID {
     if(current->existsClass(methodName)){
         cout << "Method " << methodName << " has the name of a class at line " << yylineno << endl;
         errorCount++;
-    } else if(current->existsVar(methodName)){
+    } else if(current->existsVar_current(methodName)){
         cout << "Method " << methodName << " has the name of a variable at line " << yylineno << endl;
         errorCount++;
-    } else if(current->existsFunction(methodName)){
+    } else if(current->existsFunction_current(methodName)){
         cout << "Redeclared method " << methodName << " at line " << yylineno << endl;
         errorCount++;
     } else {

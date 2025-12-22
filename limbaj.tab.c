@@ -1386,7 +1386,7 @@ yyreduce:
                     errorCount++;
                 }
                 else{
-                    if(current->existsVar(*(yyvsp[0].strVal))){
+                    if(current->existsVar_current(*(yyvsp[0].strVal))){
                         cout << "Redeclared variable " << *(yyvsp[0].strVal) << " at line " << yylineno << endl;
                         errorCount++;
                     } else {
@@ -1411,7 +1411,7 @@ yyreduce:
                     errorCount++;
                 }
                 else{
-                    if(current->existsVar(*(yyvsp[0].strVal))){
+                    if(current->existsVar_current(*(yyvsp[0].strVal))){
                         cout << "Redeclared variable " << *(yyvsp[0].strVal) << " at line " << yylineno << endl;
                         errorCount++;
                     } else {
@@ -1449,7 +1449,7 @@ yyreduce:
                  cout << "Function " << *(yyvsp[0].strVal) << " has the name of a class at line " << yylineno << endl;
                  errorCount++;
              } else {
-                if(current->existsVar(*(yyvsp[0].strVal))){
+                if(current->existsVar_current(*(yyvsp[0].strVal))){
                     cout << "Function " << *(yyvsp[0].strVal) << " has the name of a variable at line " << yylineno << endl;
                     errorCount++;
                 }
@@ -1486,12 +1486,12 @@ yyreduce:
                  cout << "Parameter " << *(yyvsp[0].strVal) << " has the name of a class at line " << yylineno << endl;
                  errorCount++;
              } else {
-                if(current->existsFunction(*(yyvsp[0].strVal))){
+                if(current->existsFunction_current(*(yyvsp[0].strVal))){
                     cout << "Parameter " << *(yyvsp[0].strVal) << " has the name of a function at line " << yylineno << endl;
                     errorCount++;
                 }
                 else{
-                    if(current->existsVar(*(yyvsp[0].strVal))){
+                    if(current->existsVar_current(*(yyvsp[0].strVal))){
                         cout << "Redeclared Parameter " << *(yyvsp[0].strVal) << " at line " << yylineno << endl;
                         errorCount++;
                     } else {
@@ -1541,10 +1541,10 @@ yyreduce:
         if(current->existsClass(fieldName)){
             cout << "Field " << fieldName << " has the name of a class at line " << yylineno << endl;
             errorCount++;
-        } else if(current->existsFunction(fieldName)){
+        } else if(current->existsFunction_current(fieldName)){
             cout << "Field " << fieldName << " has the name of a function at line " << yylineno << endl;
             errorCount++;
-        } else if(current->existsVar(fieldName)){
+        } else if(current->existsVar_current(fieldName)){
             cout << "Redeclared field " << fieldName << " at line " << yylineno << endl;
             errorCount++;
         } else {
@@ -1561,10 +1561,10 @@ yyreduce:
     if(current->existsClass(methodName)){
         cout << "Method " << methodName << " has the name of a class at line " << yylineno << endl;
         errorCount++;
-    } else if(current->existsVar(methodName)){
+    } else if(current->existsVar_current(methodName)){
         cout << "Method " << methodName << " has the name of a variable at line " << yylineno << endl;
         errorCount++;
-    } else if(current->existsFunction(methodName)){
+    } else if(current->existsFunction_current(methodName)){
         cout << "Redeclared method " << methodName << " at line " << yylineno << endl;
         errorCount++;
     } else {
