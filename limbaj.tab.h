@@ -49,8 +49,21 @@ extern int yydebug;
 
   #include <string>
   using namespace std;
+  struct Expr {
+    std::string* type;
+    int i;
+    float f;
+    bool b;
+    std::string* s;
+  };
 
-#line 54 "limbaj.tab.h"
+  inline Expr* makeExpr(const string& t) {
+        Expr* e = new Expr();
+        e->type = new string(t);
+        return e;
+    };
+
+#line 67 "limbaj.tab.h"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -94,19 +107,15 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 20 "limbaj.y"
+#line 33 "limbaj.y"
 
     int intVal;
     float floatVal;
     std::string* strVal;
-    struct Expr {
-        std::string* type;
-        int i;
-        float f;
-        std::string* s;
-    } *expr;
 
-#line 110 "limbaj.tab.h"
+    Expr *expr;
+
+#line 119 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

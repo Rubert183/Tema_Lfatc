@@ -1,6 +1,19 @@
 %code requires {
   #include <string>
   using namespace std;
+  struct Expr {
+    std::string* type;
+    int i;
+    float f;
+    bool b;
+    std::string* s;
+  };
+
+  inline Expr* makeExpr(const string& t) {
+        Expr* e = new Expr();
+        e->type = new string(t);
+        return e;
+    };
 }
 
 %{
@@ -21,13 +34,20 @@ int errorCount = 0;
     int intVal;
     float floatVal;
     std::string* strVal;
-    struct Expr {
-        std::string* type;
-        int i;
-        float f;
-        std::string* s;
-    } *expr;
+
+    Expr *expr;
 }
+
+%type <expr> expression
+%type <expr> logic_expression
+%type <expr> logic_and
+%type <expr> logic_not
+%type <expr> logic_atom
+%type <expr> expression_or_logic
+%type <expr> any_value_no_bool_const
+%type <expr> class_element
+%type <expr> func_call
+%type <expr> method_call
 
 //%destructor { delete $$; } <Str> 
 
@@ -286,12 +306,66 @@ if_else_st : IF '(' logic_expression ')' '{' code_block_no_definitions '}' ELSE 
 if_st : IF '(' logic_expression ')' '{' code_block_no_definitions '}'
       ;
 
-func_call : ID '(' call_param_list ')'
+func_call : ID '(' call_param_list ')' {
+                IdInfo* f=current->getFunction(*$1);
+                if(f==nullptr){
+                    cout << "Undefined function " << *$1 << " called at line " << yylineno << endl;
+                    errorCount++;
+                    $$ = makeExpr("");
+                } else { $$ = makeExpr(f->type);}
+            }
           ;
 
-class_element : ID '.' ID 
-              | ID '.' class_element
-              ;
+class_element : ID '.' ID {
+        IdInfo* obj = current->getVar_current(*$1);
+        if(!obj){
+            cout << "Undefined variable " << *$1 << " at line " << yylineno << endl;
+            errorCount++;
+            $$ = makeExpr("");
+        } else {
+            // Obținem scope-ul clasei obiectului
+            SymTable* classScope = current->getClass(obj->type)->class_scope;
+            if(!classScope){
+                cout << "Class " << obj->type << " has no scope at line " << yylineno << endl;
+                errorCount++;
+                $$ = makeExpr("");
+            } else {
+                IdInfo* field = classScope->getVar_current(*$3);
+                if(!field){
+                    cout << "Undefined class element " << *$3 << " in class " << obj->type << " at line " << yylineno << endl;
+                    errorCount++;
+                    $$ = makeExpr("");
+                } else {
+                    $$ = makeExpr(field->type);
+                }
+            }
+        }
+      }
+    | ID '.' class_element {  
+        // Recursivitate: accesăm câmpul dintr-un câmp care este și el un obiect
+        Expr* left = $3;
+        IdInfo* obj = current->getVar_current(*$1);
+        if(!obj || !left){
+            errorCount++;
+            $$ = makeExpr("");
+        } else {
+            SymTable* classScope = current->getClass(obj->type)->class_scope;
+            if(!classScope){
+                errorCount++;
+                $$ = makeExpr("");
+            } else {
+                IdInfo* field = classScope->getVar_current(*left->type);
+                if(!field){
+                    cout << "Undefined class element " << *left->type << " in class " << obj->type << " at line " << yylineno << endl;
+                    errorCount++;
+                    $$ = makeExpr("");
+                } else {
+                    $$ = makeExpr(field->type);
+                }
+            }
+        }
+    }
+    ;
 
 method_call : class_element '(' call_param_list ')'
             ;
@@ -299,8 +373,27 @@ method_call : class_element '(' call_param_list ')'
 while_loop : WHILE '(' logic_expression ')' '{' code_block_no_definitions '}'
            ;
 
-assign_statement : class_element ASSIGN expression_or_logic
-                 | ID ASSIGN expression_or_logic
+assign_statement : class_element ASSIGN expression_or_logic {
+                    if(*$3->type!=""){
+                        if (*$1->type != *$3->type) {
+                            if(*$1->type!="")
+                                cout << "Cannot assign type "<< *$3->type << " to type "<< *$1->type << " at line "<< yylineno << endl;
+                            errorCount++;
+                        }
+                    }
+                }
+                 | ID ASSIGN expression_or_logic {
+                    IdInfo* v = current->getVar(*$1);
+                    if (!v) {
+                    cout << "Undeclared variable " << *$1<< " at line " << yylineno << endl;
+                    errorCount++;
+                    }
+                    else if (v->type != *$3->type) {
+                        if(*$3->type!="")
+                            cout << "Cannot assign type "<< *$3->type << " to type "<< v->type << " at line "<< yylineno << endl;
+                        errorCount++;
+                    }
+                }
                  ;
 
 expression_or_logic
@@ -332,9 +425,22 @@ any_value : func_call
 any_value_no_bool_const : func_call
                         | method_call
                         | class_element
-                        | ID
-                        | INT_CONST
-                        | FLOAT_CONST
+                        | ID {
+                            IdInfo* v=current->getVar(*$1);
+                            if(v==nullptr){
+                                cout << "Undefined variable " << *$1 << " called at line " << yylineno << endl;
+                                errorCount++;
+                                $$ = makeExpr("");
+                            } else { $$ = makeExpr(v->type);}
+                        }
+                        | INT_CONST {
+                            $$ = makeExpr("int");
+                            $$->i=$1;
+                        }
+                        | FLOAT_CONST {
+                            $$ = makeExpr("float");
+                            $$->f=$1;
+                        }
                         ;
 
 /*any_not_const : func_call
@@ -351,15 +457,29 @@ logic_and : logic_and AND logic_not
           | logic_not
           ;
 
-logic_not : NOT logic_not
-          | logic_atom
+logic_not : NOT logic_not {
+            $$ = makeExpr("bool");
+            $$->b = !$2->b;
+            }
+          | logic_atom {
+            $$ = $1; 
+          }
           ;
 
 logic_atom
-    : '(' logic_expression ')'
-    | expression expression_comparisom expression
-    | TRU
-    | FLS
+    : '(' logic_expression ')' { $$ = $2; }
+    | expression expression_comparisom expression {
+        if(*$1->type!=*$3->type){
+            if(*$1->type!="")
+                cout << "Invalid comparisom of type " << *$1->type << " and type " <<*$3->type<<"called at line " << yylineno << endl;
+            $$=makeExpr("");
+            errorCount++;
+        } else {
+            $$=makeExpr("bool");
+        }
+    }
+    | TRU {$$=makeExpr("bool"); $$->b=true;}
+    | FLS {$$=makeExpr("bool"); $$->b=false;}
     ;
 
 expression_comparisom : LT
@@ -370,12 +490,132 @@ expression_comparisom : LT
                       | GE
                       ;
 
-expression : '(' expression ')' 
-           | expression '+' expression
-           | expression '-' expression
-           | expression '/' expression
-           | expression '*' expression
-           | expression '%' expression
+expression : '(' expression ')' {$$=$2;}
+           | expression '+' expression {
+            if(*$1->type!=*$3->type){
+                cout << "Tried to make an addition on a " << *$1->type <<" with a "<<*$3->type<< " at line " << yylineno << endl;
+                errorCount++;
+            }
+            else if(*$1->type=="int"||*$1->type=="float"){
+                if(*$1->type=="int"){
+                    $$=makeExpr("int");
+                    $$->i=$1->i+$3->i;
+                }
+                else{
+                    $$=makeExpr("float");
+                    $$->f=$1->f+$3->f;
+                }
+            }
+            else{
+                 if(*$1->type!="")
+                    cout << "Invalid add operation for the type " << *$1->type << " called at line " << yylineno << endl;
+                 $$=makeExpr("");
+                 errorCount++;
+            }
+           }
+           | expression '-' expression {
+            if(*$1->type!=*$3->type){
+                cout << "Tried to substract from a " << *$1->type <<" with a "<<*$3->type<< " at line " << yylineno << endl;
+                errorCount++;
+            }
+            else if(*$1->type=="int"||*$1->type=="float"){
+                if(*$1->type=="int"){
+                    $$=makeExpr("int");
+                    $$->i=$1->i-$3->i;
+                }
+                else{
+                    $$=makeExpr("float");
+                    $$->f=$1->f-$3->f;
+                }
+            }
+            else{
+                 if(*$1->type!="")
+                    cout << "Invalid substract operation for the type " << *$1->type << " called at line " << yylineno << endl;
+                $$=makeExpr("");
+                 errorCount++;
+            }
+           }
+           | expression '/' expression{
+            if(*$1->type!=*$3->type){
+                cout << "Tried to divide a " << *$1->type <<" with a "<<*$3->type<< " at line " << yylineno << endl;
+                errorCount++;
+            }
+            else if(*$1->type=="int"||*$1->type=="float"){
+                if(*$1->type=="int"){
+                    if($3->i!=0){
+                        $$=makeExpr("int");
+                        $$->i=$1->i/$3->i;
+                    }
+                    else{
+                        cout << "Tried to divide with a 0 at line " << yylineno << endl;
+                        $$=makeExpr("");
+                        errorCount++;
+                    }
+                }
+                else{
+                    if($3->f!=0.0){
+                        $$=makeExpr("float");
+                        $$->f=$1->f/$3->f;
+                    }
+                    else{
+                        cout << "Tried to divide with a 0 at line " << yylineno << endl;
+                        $$=makeExpr("");
+                        errorCount++;
+                    }
+                }
+            }
+            else{
+                 if(*$1->type!="")
+                    cout << "Invalid div operation for the type " << *$1->type << " called at line " << yylineno << endl;
+                 $$=makeExpr("");
+                 errorCount++;
+            }
+           }
+           | expression '*' expression{
+            if(*$1->type!=*$3->type){
+                cout << "Tried to mutiply a " << *$1->type <<" with a "<<*$3->type<< " at line " << yylineno << endl;
+                errorCount++;
+            }
+            else if(*$1->type=="int"||*$1->type=="float"){
+                if(*$1->type=="int"){
+                    $$=makeExpr("int");
+                    $$->i=$1->i*$3->i;
+                }
+                else{
+                    $$=makeExpr("float");
+                    $$->i=$1->f*$3->f;
+                }
+            }
+            else{
+                 if(*$1->type!="")
+                    cout << "Invalid multiply operation for the type " << *$1->type << " called at line " << yylineno << endl;
+                 $$=makeExpr("");
+                 errorCount++;
+            }
+           }
+           | expression '%' expression{
+            if(*$1->type!=*$3->type){
+                cout << "Tried to do a mod operation on a " << *$1->type <<" with a "<<*$3->type<< " at line " << yylineno << endl;
+                errorCount++;
+            }
+            else if(*$1->type=="int"){
+                    if($3->i!=0){
+                        $$=makeExpr("int");
+                        $$->i=$1->i%$3->i;
+                    }
+                    else{
+                        cout << "Tried a mod operation with a 0 at line " << yylineno << endl;
+                        $$=makeExpr("");
+                        errorCount++;
+                    }
+            }
+            else{
+                 if(*$1->type!="")
+                    cout << "Invalid mod operation for the type " << *$1->type << " called at line " << yylineno << endl;
+                 $$=makeExpr("");
+                 errorCount++;
+            }
+           }
            | any_value_no_bool_const
            ;
 

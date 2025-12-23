@@ -53,6 +53,10 @@ public:
     IdInfo* getFunction(const string& name);
     IdInfo* getClass(const string& name);
 
+    IdInfo* getVar_current(const string& name);
+    IdInfo* getFunction_current(const string& name);
+    IdInfo* getClass_current(const string& name);
+
     SymTable* getClassScope(const string& className);
     SymTable* getFunctionScope(const string& funcName);
 

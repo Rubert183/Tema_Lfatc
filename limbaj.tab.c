@@ -67,7 +67,7 @@
 
 
 /* First part of user prologue.  */
-#line 6 "limbaj.y"
+#line 19 "limbaj.y"
 
 #include <iostream>
 #include "SymTable.h"
@@ -583,19 +583,19 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    49,    49,    52,    53,    56,    57,    58,    61,    81,
-      81,   103,   104,   113,   116,   139,   116,   144,   145,   148,
-     149,   152,   175,   192,   175,   195,   196,   197,   198,   201,
-     218,   218,   241,   244,   245,   246,   247,   248,   249,   250,
-     251,   254,   255,   256,   257,   258,   259,   260,   261,   262,
-     263,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275,   276,   279,   280,   283,   286,   289,   292,   293,   296,
-     299,   302,   303,   307,   308,   312,   313,   316,   319,   322,
-     323,   324,   325,   326,   327,   328,   329,   332,   333,   334,
-     335,   336,   337,   346,   347,   350,   351,   354,   355,   359,
-     360,   361,   362,   365,   366,   367,   368,   369,   370,   373,
-     374,   375,   376,   377,   378,   379,   382,   383,   384,   385,
-     386
+       0,    69,    69,    72,    73,    76,    77,    78,    81,   101,
+     101,   123,   124,   133,   136,   159,   136,   164,   165,   168,
+     169,   172,   195,   212,   195,   215,   216,   217,   218,   221,
+     238,   238,   261,   264,   265,   266,   267,   268,   269,   270,
+     271,   274,   275,   276,   277,   278,   279,   280,   281,   282,
+     283,   286,   287,   288,   289,   290,   291,   292,   293,   294,
+     295,   296,   299,   300,   303,   306,   309,   319,   341,   364,
+     367,   370,   379,   394,   395,   399,   400,   403,   406,   409,
+     410,   411,   412,   413,   414,   415,   416,   419,   420,   421,
+     422,   430,   434,   446,   447,   450,   451,   454,   458,   464,
+     465,   475,   476,   479,   480,   481,   482,   483,   484,   487,
+     488,   510,   532,   568,   590,   613,   616,   617,   618,   619,
+     620
 };
 #endif
 
@@ -1369,13 +1369,13 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* progr: top_level main  */
-#line 49 "limbaj.y"
+#line 69 "limbaj.y"
                        {if (errorCount == 0) cout<< "The program is correct!" << endl;}
 #line 1375 "limbaj.tab.c"
     break;
 
   case 8: /* list_var: ID  */
-#line 61 "limbaj.y"
+#line 81 "limbaj.y"
               {
              if(current->existsClass(*(yyvsp[0].strVal))){
                  cout << "Variable " << *(yyvsp[0].strVal) << " has the name of a class at line " << yylineno << endl;
@@ -1400,7 +1400,7 @@ yyreduce:
     break;
 
   case 9: /* $@1: %empty  */
-#line 81 "limbaj.y"
+#line 101 "limbaj.y"
               {
              if(current->existsClass(*(yyvsp[0].strVal))){
                  cout << "Variable " << *(yyvsp[0].strVal) << " has the name of a class at line " << yylineno << endl;
@@ -1425,13 +1425,13 @@ yyreduce:
     break;
 
   case 11: /* type_or_class: TYPE  */
-#line 103 "limbaj.y"
+#line 123 "limbaj.y"
                      {currentType=*(yyvsp[0].strVal);}
 #line 1431 "limbaj.tab.c"
     break;
 
   case 12: /* type_or_class: ID  */
-#line 104 "limbaj.y"
+#line 124 "limbaj.y"
                    {
                 if(!current->existsClass(*(yyvsp[0].strVal))){
                  cout << "Undeclared class " << *(yyvsp[0].strVal) << " at line " << yylineno << endl;
@@ -1443,7 +1443,7 @@ yyreduce:
     break;
 
   case 14: /* $@2: %empty  */
-#line 116 "limbaj.y"
+#line 136 "limbaj.y"
                        {
              if(current->existsClass(*(yyvsp[0].strVal))){
                  cout << "Function " << *(yyvsp[0].strVal) << " has the name of a class at line " << yylineno << endl;
@@ -1472,7 +1472,7 @@ yyreduce:
     break;
 
   case 15: /* $@3: %empty  */
-#line 139 "limbaj.y"
+#line 159 "limbaj.y"
                                                      { 
             current=current->getParent();
          }
@@ -1480,7 +1480,7 @@ yyreduce:
     break;
 
   case 21: /* param: type_or_class ID  */
-#line 152 "limbaj.y"
+#line 172 "limbaj.y"
                          {
              if(current->existsClass(*(yyvsp[0].strVal))){
                  cout << "Parameter " << *(yyvsp[0].strVal) << " has the name of a class at line " << yylineno << endl;
@@ -1506,7 +1506,7 @@ yyreduce:
     break;
 
   case 22: /* $@4: %empty  */
-#line 175 "limbaj.y"
+#line 195 "limbaj.y"
                     {
     string className = *(yyvsp[0].strVal);
         if(current->existsVar(className)){
@@ -1529,13 +1529,13 @@ yyreduce:
     break;
 
   case 23: /* $@5: %empty  */
-#line 192 "limbaj.y"
+#line 212 "limbaj.y"
                            {current=current->getParent();}
 #line 1535 "limbaj.tab.c"
     break;
 
   case 29: /* field: type_or_class ID  */
-#line 201 "limbaj.y"
+#line 221 "limbaj.y"
                          {
         string fieldName = *(yyvsp[0].strVal);
         if(current->existsClass(fieldName)){
@@ -1555,7 +1555,7 @@ yyreduce:
     break;
 
   case 30: /* $@6: %empty  */
-#line 218 "limbaj.y"
+#line 238 "limbaj.y"
                           {
     string methodName = *(yyvsp[0].strVal);
     if(current->existsClass(methodName)){
@@ -1579,15 +1579,349 @@ yyreduce:
     break;
 
   case 31: /* method: type_or_class ID $@6 '(' opt_param_list ')' '{' code_block '}'  */
-#line 236 "limbaj.y"
+#line 256 "limbaj.y"
                                                 {
         current = current->getParent();
     }
 #line 1587 "limbaj.tab.c"
     break;
 
+  case 66: /* func_call: ID '(' call_param_list ')'  */
+#line 309 "limbaj.y"
+                                       {
+                IdInfo* f=current->getFunction(*(yyvsp[-3].strVal));
+                if(f==nullptr){
+                    cout << "Undefined function " << *(yyvsp[-3].strVal) << " called at line " << yylineno << endl;
+                    errorCount++;
+                    (yyval.expr) = makeExpr("");
+                } else { (yyval.expr) = makeExpr(f->type);}
+            }
+#line 1600 "limbaj.tab.c"
+    break;
 
-#line 1591 "limbaj.tab.c"
+  case 67: /* class_element: ID '.' ID  */
+#line 319 "limbaj.y"
+                          {
+        IdInfo* obj = current->getVar_current(*(yyvsp[-2].strVal));
+        if(!obj){
+            cout << "Undefined variable " << *(yyvsp[-2].strVal) << " at line " << yylineno << endl;
+            (yyval.expr) = makeExpr("");
+        } else {
+            // Obținem scope-ul clasei obiectului
+            SymTable* classScope = current->getClass(obj->type)->class_scope;
+            if(!classScope){
+                cout << "Class " << obj->type << " has no scope at line " << yylineno << endl;
+                (yyval.expr) = makeExpr("");
+            } else {
+                IdInfo* field = classScope->getVar_current(*(yyvsp[0].strVal));
+                if(!field){
+                    cout << "Undefined class element " << *(yyvsp[0].strVal) << " in class " << obj->type << " at line " << yylineno << endl;
+                    (yyval.expr) = makeExpr("");
+                } else {
+                    (yyval.expr) = makeExpr(field->type);
+                }
+            }
+        }
+      }
+#line 1627 "limbaj.tab.c"
+    break;
+
+  case 68: /* class_element: ID '.' class_element  */
+#line 341 "limbaj.y"
+                           {  
+        // Recursivitate: accesăm câmpul dintr-un câmp care este și el un obiect
+        Expr* left = (yyvsp[0].expr);
+        IdInfo* obj = current->getVar_current(*(yyvsp[-2].strVal));
+        if(!obj || !left){
+            (yyval.expr) = makeExpr("");
+        } else {
+            SymTable* classScope = current->getClass(obj->type)->class_scope;
+            if(!classScope){
+                (yyval.expr) = makeExpr("");
+            } else {
+                IdInfo* field = classScope->getVar_current(*left->type);
+                if(!field){
+                    cout << "Undefined class element " << *left->type << " in class " << obj->type << " at line " << yylineno << endl;
+                    (yyval.expr) = makeExpr("");
+                } else {
+                    (yyval.expr) = makeExpr(field->type);
+                }
+            }
+        }
+    }
+#line 1653 "limbaj.tab.c"
+    break;
+
+  case 71: /* assign_statement: class_element ASSIGN expression_or_logic  */
+#line 370 "limbaj.y"
+                                                            {
+                    if(*(yyvsp[0].expr)->type!=""){
+                        if (*(yyvsp[-2].expr)->type != *(yyvsp[0].expr)->type) {
+                            if(*(yyvsp[-2].expr)->type!="")
+                                cout << "Cannot assign type "<< *(yyvsp[0].expr)->type << " to type "<< *(yyvsp[-2].expr)->type << " at line "<< yylineno << endl;
+                            errorCount++;
+                        }
+                    }
+                }
+#line 1667 "limbaj.tab.c"
+    break;
+
+  case 72: /* assign_statement: ID ASSIGN expression_or_logic  */
+#line 379 "limbaj.y"
+                                                 {
+                    IdInfo* v = current->getVar(*(yyvsp[-2].strVal));
+                    if (!v) {
+                    cout << "Undeclared variable " << *(yyvsp[-2].strVal)<< " at line " << yylineno << endl;
+                    errorCount++;
+                    }
+                    else if (v->type != *(yyvsp[0].expr)->type) {
+                        if(*(yyvsp[0].expr)->type!="")
+                            cout << "Cannot assign type "<< *(yyvsp[0].expr)->type << " to type "<< v->type << " at line "<< yylineno << endl;
+                        errorCount++;
+                    }
+                }
+#line 1684 "limbaj.tab.c"
+    break;
+
+  case 90: /* any_value_no_bool_const: ID  */
+#line 422 "limbaj.y"
+                             {
+                            IdInfo* v=current->getVar(*(yyvsp[0].strVal));
+                            if(v==nullptr){
+                                cout << "Undefined variable " << *(yyvsp[0].strVal) << " called at line " << yylineno << endl;
+                                errorCount++;
+                                (yyval.expr) = makeExpr("");
+                            } else { (yyval.expr) = makeExpr(v->type);}
+                        }
+#line 1697 "limbaj.tab.c"
+    break;
+
+  case 91: /* any_value_no_bool_const: INT_CONST  */
+#line 430 "limbaj.y"
+                                    {
+                            (yyval.expr) = makeExpr("int");
+                            (yyval.expr)->i=(yyvsp[0].intVal);
+                        }
+#line 1706 "limbaj.tab.c"
+    break;
+
+  case 92: /* any_value_no_bool_const: FLOAT_CONST  */
+#line 434 "limbaj.y"
+                                      {
+                            (yyval.expr) = makeExpr("float");
+                            (yyval.expr)->f=(yyvsp[0].floatVal);
+                        }
+#line 1715 "limbaj.tab.c"
+    break;
+
+  case 97: /* logic_not: NOT logic_not  */
+#line 454 "limbaj.y"
+                          {
+            (yyval.expr) = makeExpr("bool");
+            (yyval.expr)->b = !(yyvsp[0].expr)->b;
+            }
+#line 1724 "limbaj.tab.c"
+    break;
+
+  case 98: /* logic_not: logic_atom  */
+#line 458 "limbaj.y"
+                       {
+            (yyval.expr) = (yyvsp[0].expr); 
+          }
+#line 1732 "limbaj.tab.c"
+    break;
+
+  case 99: /* logic_atom: '(' logic_expression ')'  */
+#line 464 "limbaj.y"
+                               { (yyval.expr) = (yyvsp[-1].expr); }
+#line 1738 "limbaj.tab.c"
+    break;
+
+  case 100: /* logic_atom: expression expression_comparisom expression  */
+#line 465 "limbaj.y"
+                                                  {
+        if(*(yyvsp[-2].expr)->type!=*(yyvsp[0].expr)->type){
+            if(*(yyvsp[-2].expr)->type!="")
+                cout << "Invalid comparisom of type " << *(yyvsp[-2].expr)->type << " and type " <<*(yyvsp[0].expr)->type<<"called at line " << yylineno << endl;
+            (yyval.expr)=makeExpr("");
+            errorCount++;
+        } else {
+            (yyval.expr)=makeExpr("bool");
+        }
+    }
+#line 1753 "limbaj.tab.c"
+    break;
+
+  case 101: /* logic_atom: TRU  */
+#line 475 "limbaj.y"
+          {(yyval.expr)=makeExpr("bool"); (yyval.expr)->b=true;}
+#line 1759 "limbaj.tab.c"
+    break;
+
+  case 102: /* logic_atom: FLS  */
+#line 476 "limbaj.y"
+          {(yyval.expr)=makeExpr("bool"); (yyval.expr)->b=false;}
+#line 1765 "limbaj.tab.c"
+    break;
+
+  case 109: /* expression: '(' expression ')'  */
+#line 487 "limbaj.y"
+                                {(yyval.expr)=(yyvsp[-1].expr);}
+#line 1771 "limbaj.tab.c"
+    break;
+
+  case 110: /* expression: expression '+' expression  */
+#line 488 "limbaj.y"
+                                       {
+            if(*(yyvsp[-2].expr)->type!=*(yyvsp[0].expr)->type){
+                cout << "Tried to make an addition on a " << *(yyvsp[-2].expr)->type <<" with a "<<*(yyvsp[0].expr)->type<< " at line " << yylineno << endl;
+                errorCount++;
+            }
+            else if(*(yyvsp[-2].expr)->type=="int"||*(yyvsp[-2].expr)->type=="float"){
+                if(*(yyvsp[-2].expr)->type=="int"){
+                    (yyval.expr)=makeExpr("int");
+                    (yyval.expr)->i=(yyvsp[-2].expr)->i+(yyvsp[0].expr)->i;
+                }
+                else{
+                    (yyval.expr)=makeExpr("float");
+                    (yyval.expr)->f=(yyvsp[-2].expr)->f+(yyvsp[0].expr)->f;
+                }
+            }
+            else{
+                 if(*(yyvsp[-2].expr)->type!="")
+                    cout << "Invalid add operation for the type " << *(yyvsp[-2].expr)->type << " called at line " << yylineno << endl;
+                 (yyval.expr)=makeExpr("");
+                 errorCount++;
+            }
+           }
+#line 1798 "limbaj.tab.c"
+    break;
+
+  case 111: /* expression: expression '-' expression  */
+#line 510 "limbaj.y"
+                                       {
+            if(*(yyvsp[-2].expr)->type!=*(yyvsp[0].expr)->type){
+                cout << "Tried to substract from a " << *(yyvsp[-2].expr)->type <<" with a "<<*(yyvsp[0].expr)->type<< " at line " << yylineno << endl;
+                errorCount++;
+            }
+            else if(*(yyvsp[-2].expr)->type=="int"||*(yyvsp[-2].expr)->type=="float"){
+                if(*(yyvsp[-2].expr)->type=="int"){
+                    (yyval.expr)=makeExpr("int");
+                    (yyval.expr)->i=(yyvsp[-2].expr)->i-(yyvsp[0].expr)->i;
+                }
+                else{
+                    (yyval.expr)=makeExpr("float");
+                    (yyval.expr)->f=(yyvsp[-2].expr)->f-(yyvsp[0].expr)->f;
+                }
+            }
+            else{
+                 if(*(yyvsp[-2].expr)->type!="")
+                    cout << "Invalid substract operation for the type " << *(yyvsp[-2].expr)->type << " called at line " << yylineno << endl;
+                (yyval.expr)=makeExpr("");
+                 errorCount++;
+            }
+           }
+#line 1825 "limbaj.tab.c"
+    break;
+
+  case 112: /* expression: expression '/' expression  */
+#line 532 "limbaj.y"
+                                      {
+            if(*(yyvsp[-2].expr)->type!=*(yyvsp[0].expr)->type){
+                cout << "Tried to divide a " << *(yyvsp[-2].expr)->type <<" with a "<<*(yyvsp[0].expr)->type<< " at line " << yylineno << endl;
+                errorCount++;
+            }
+            else if(*(yyvsp[-2].expr)->type=="int"||*(yyvsp[-2].expr)->type=="float"){
+                if(*(yyvsp[-2].expr)->type=="int"){
+                    if((yyvsp[0].expr)->i!=0){
+                        (yyval.expr)=makeExpr("int");
+                        (yyval.expr)->i=(yyvsp[-2].expr)->i/(yyvsp[0].expr)->i;
+                    }
+                    else{
+                        cout << "Tried to divide with a 0 at line " << yylineno << endl;
+                        (yyval.expr)=makeExpr("");
+                        errorCount++;
+                    }
+                }
+                else{
+                    if((yyvsp[0].expr)->f!=0.0){
+                        (yyval.expr)=makeExpr("float");
+                        (yyval.expr)->f=(yyvsp[-2].expr)->f/(yyvsp[0].expr)->f;
+                    }
+                    else{
+                        cout << "Tried to divide with a 0 at line " << yylineno << endl;
+                        (yyval.expr)=makeExpr("");
+                        errorCount++;
+                    }
+                }
+            }
+            else{
+                 if(*(yyvsp[-2].expr)->type!="")
+                    cout << "Invalid div operation for the type " << *(yyvsp[-2].expr)->type << " called at line " << yylineno << endl;
+                 (yyval.expr)=makeExpr("");
+                 errorCount++;
+            }
+           }
+#line 1866 "limbaj.tab.c"
+    break;
+
+  case 113: /* expression: expression '*' expression  */
+#line 568 "limbaj.y"
+                                      {
+            if(*(yyvsp[-2].expr)->type!=*(yyvsp[0].expr)->type){
+                cout << "Tried to mutiply a " << *(yyvsp[-2].expr)->type <<" with a "<<*(yyvsp[0].expr)->type<< " at line " << yylineno << endl;
+                errorCount++;
+            }
+            else if(*(yyvsp[-2].expr)->type=="int"||*(yyvsp[-2].expr)->type=="float"){
+                if(*(yyvsp[-2].expr)->type=="int"){
+                    (yyval.expr)=makeExpr("int");
+                    (yyval.expr)->i=(yyvsp[-2].expr)->i*(yyvsp[0].expr)->i;
+                }
+                else{
+                    (yyval.expr)=makeExpr("float");
+                    (yyval.expr)->i=(yyvsp[-2].expr)->f*(yyvsp[0].expr)->f;
+                }
+            }
+            else{
+                 if(*(yyvsp[-2].expr)->type!="")
+                    cout << "Invalid multiply operation for the type " << *(yyvsp[-2].expr)->type << " called at line " << yylineno << endl;
+                 (yyval.expr)=makeExpr("");
+                 errorCount++;
+            }
+           }
+#line 1893 "limbaj.tab.c"
+    break;
+
+  case 114: /* expression: expression '%' expression  */
+#line 590 "limbaj.y"
+                                      {
+            if(*(yyvsp[-2].expr)->type!=*(yyvsp[0].expr)->type){
+                cout << "Tried to do a mod operation on a " << *(yyvsp[-2].expr)->type <<" with a "<<*(yyvsp[0].expr)->type<< " at line " << yylineno << endl;
+                errorCount++;
+            }
+            else if(*(yyvsp[-2].expr)->type=="int"){
+                    if((yyvsp[0].expr)->i!=0){
+                        (yyval.expr)=makeExpr("int");
+                        (yyval.expr)->i=(yyvsp[-2].expr)->i%(yyvsp[0].expr)->i;
+                    }
+                    else{
+                        cout << "Tried a mod operation with a 0 at line " << yylineno << endl;
+                        (yyval.expr)=makeExpr("");
+                        errorCount++;
+                    }
+            }
+            else{
+                 if(*(yyvsp[-2].expr)->type!="")
+                    cout << "Invalid mod operation for the type " << *(yyvsp[-2].expr)->type << " called at line " << yylineno << endl;
+                 (yyval.expr)=makeExpr("");
+                 errorCount++;
+            }
+           }
+#line 1921 "limbaj.tab.c"
+    break;
+
+
+#line 1925 "limbaj.tab.c"
 
       default: break;
     }
@@ -1780,7 +2114,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 389 "limbaj.y"
+#line 623 "limbaj.y"
 
 void yyerror(const char * s){
      cout << "error:" << s << " at line: " << yylineno << endl;

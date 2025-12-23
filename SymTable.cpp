@@ -82,6 +82,26 @@ IdInfo* SymTable::getClass(const string& name){
     return parent ? parent->getClass(name) : nullptr;
 }
 
+IdInfo* SymTable::getVar_current(const string& name){
+    auto it = variables.find(name);
+    if (it != variables.end())
+        return &it->second;
+    return nullptr;
+}
+
+IdInfo* SymTable::getFunction_current(const string& name){
+    auto it = functions.find(name);
+    if (it != functions.end())
+        return &it->second;
+    return nullptr;
+}
+
+IdInfo* SymTable::getClass_current(const string& name){
+    auto it = classes.find(name);
+    if (it != classes.end())
+        return &it->second;
+    return nullptr;
+}
 
 SymTable* SymTable::getClassScope(const string& className) {
     auto it = classes.find(className);
