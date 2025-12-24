@@ -1,25 +1,54 @@
-int a,b;
-
-class my_Second_Class{
-    int b
+class PI {
+    int get_pi(){
+        return 3.14;
+    },
+    PI new_pi(){
+        PI rez;
+        return rez;
+    },
+    bool is_pi(float nr){
+        bool rez;
+        if(nr==3.14){
+            rez:=true;
+        }
+        else{
+            rez:=false;
+        }
+        return rez;
+    }
 };
 
-class MyClass{
-    int a,
-    my_Second_Class c
+class Math
+{
+    PI pi,
+    float e,
+    int cmmdc(int a,int b){
+        int r;
+        while(a*2==2){
+            r:=a%b;
+            a:=b;
+            b:=r;
+            if(not b==0 && a>0){
+                return a;
+            }
+        }
+        return a;
+    }
 };
 
+float rez;
 
-
-int my_func(int a,float bb){
-    int a_local;
+float calc(int a,int b, Math m1, Math m2){
+    rez := m2.pi.get_pi() + 4.301 - m1.cmmdc(a,b);
+    return rez;
 };
 
-int my_func_2(int ab,float bb){
-    int a_local;
-};
+int a, b;
+Math m1,m2;
+PI p;
 
-MyClass c1,c2;
 main{
-    c1.a:=c2.c.b;
+    b := 4 + 3;
+    f(5);
+    rez:=calc(a,b,m1,m2);
 }

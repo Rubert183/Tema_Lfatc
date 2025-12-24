@@ -49,8 +49,12 @@ extern int yydebug;
 
   #include <string>
   using namespace std;
+
+  class SymTable;
   struct Expr {
     std::string* type;
+    std::string* name;
+    class SymTable* cur_scope=nullptr;
     int i;
     float f;
     bool b;
@@ -63,7 +67,7 @@ extern int yydebug;
         return e;
     };
 
-#line 67 "limbaj.tab.h"
+#line 71 "limbaj.tab.h"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -107,7 +111,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 33 "limbaj.y"
+#line 37 "limbaj.y"
 
     int intVal;
     float floatVal;
@@ -115,7 +119,7 @@ union YYSTYPE
 
     Expr *expr;
 
-#line 119 "limbaj.tab.h"
+#line 123 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

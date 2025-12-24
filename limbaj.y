@@ -1,8 +1,12 @@
 %code requires {
   #include <string>
   using namespace std;
+
+  class SymTable;
   struct Expr {
     std::string* type;
+    std::string* name;
+    class SymTable* cur_scope=nullptr;
     int i;
     float f;
     bool b;
@@ -46,10 +50,7 @@ int errorCount = 0;
 %type <expr> expression_or_logic
 %type <expr> any_value_no_bool_const
 %type <expr> class_element
-%type <expr> func_call
 %type <expr> method_call
-
-//%destructor { delete $$; } <Str> 
 
 %token CLASS_MK MAIN_MK PRINT RETURN
 %token ASSIGN EQ NEQ LE GE LT GT NR NOT AND OR
@@ -63,9 +64,8 @@ int errorCount = 0;
 %left '+' '-' 
 %left '*' '/' '%'
 
-
-
 %%
+
 progr : top_level main {if (errorCount == 0) cout<< "The program is correct!" << endl;}
       ;
 
@@ -82,42 +82,30 @@ list_var : ID {
              if(current->existsClass(*$1)){
                  cout << "Variable " << *$1 << " has the name of a class at line " << yylineno << endl;
                  errorCount++;
-             } else {
-                if(current->existsFunction(*$1)){
+             } else if(current->existsFunction(*$1)){
                     cout << "Variable " << *$1 << " has the name of a function at line " << yylineno << endl;
                     errorCount++;
-                }
-                else{
-                    if(current->existsVar_current(*$1)){
-                        cout << "Redeclared variable " << *$1 << " at line " << yylineno << endl;
-                        errorCount++;
-                    } else {
-                        current->addVar(currentType, *$1);
-                    }
-                }
+             } else if(current->existsVar_current(*$1)){
+                    cout << "Redeclared variable " << *$1 << " at line " << yylineno << endl;
+                    errorCount++;
+             } else {
+                    current->addVar(currentType, *$1);
              }
-             
-         }
+         } ',' list_var
          | ID {
              if(current->existsClass(*$1)){
                  cout << "Variable " << *$1 << " has the name of a class at line " << yylineno << endl;
                  errorCount++;
-             } else {
-                if(current->existsFunction(*$1)){
+             } else if(current->existsFunction(*$1)){
                     cout << "Variable " << *$1 << " has the name of a function at line " << yylineno << endl;
                     errorCount++;
-                }
-                else{
-                    if(current->existsVar_current(*$1)){
-                        cout << "Redeclared variable " << *$1 << " at line " << yylineno << endl;
-                        errorCount++;
-                    } else {
-                        current->addVar(currentType, *$1);
-                    }
-                }
+             } else if(current->existsVar_current(*$1)){
+                    cout << "Redeclared variable " << *$1 << " at line " << yylineno << endl;
+                    errorCount++;
+             } else {
+                    current->addVar(currentType, *$1);
              }
-             
-         } ',' list_var
+         }
          ;
 
 type_or_class : TYPE {currentType=*$1;}
@@ -137,25 +125,19 @@ func: type_or_class ID {
              if(current->existsClass(*$2)){
                  cout << "Function " << *$2 << " has the name of a class at line " << yylineno << endl;
                  errorCount++;
-             } else {
-                if(current->existsVar_current(*$2)){
+             } else if(current->existsVar_current(*$2)){
                     cout << "Function " << *$2 << " has the name of a variable at line " << yylineno << endl;
                     errorCount++;
-                }
-                else{
-                    if(current->existsFunction(*$2)){
+             } else if(current->existsFunction(*$2)){
                         cout << "Redeclared function " << *$2 << " at line " << yylineno << endl;
                         errorCount++;
-                    } else {
+             } else {
                         current->addFunction(currentType, *$2);
                         SymTable* funcScope = new SymTable(*$2, current);
                         currentIdInfo=current->getFunction(*$2);
                         currentIdInfo->function_scope = funcScope;
                         current = current->getFunctionScope(*$2);
-                    }
-                }
              }
-             
          } '(' opt_param_list ')' '{' code_block '}' { 
             current=current->getParent();
          }';'
@@ -173,27 +155,21 @@ param : type_or_class ID {
              if(current->existsClass(*$2)){
                  cout << "Parameter " << *$2 << " has the name of a class at line " << yylineno << endl;
                  errorCount++;
-             } else {
-                if(current->existsFunction_current(*$2)){
+             } else if(current->existsFunction_current(*$2)){
                     cout << "Parameter " << *$2 << " has the name of a function at line " << yylineno << endl;
                     errorCount++;
-                }
-                else{
-                    if(current->existsVar_current(*$2)){
-                        cout << "Redeclared Parameter " << *$2 << " at line " << yylineno << endl;
-                        errorCount++;
-                    } else {
+             } else if(current->existsVar_current(*$2)){
+                    cout << "Redeclared Parameter " << *$2 << " at line " << yylineno << endl;
+                    errorCount++;
+             } else {
                         currentIdInfo->add_param(currentType,*$2);
                         current->addVar(currentType, *$2);
-                    }
-                }
              }
-             
          }
       ; 
 
 class : CLASS_MK ID {
-    string className = *$2;
+        string className = *$2;
         if(current->existsVar(className)){
             cout << "Class " << className << " has the name of a variable at line " << yylineno << endl;
             errorCount++;
@@ -264,7 +240,6 @@ main : MAIN_MK '{' main_code_block '}'
 main_code_block : 
                 | if_else_st main_code_block
                 | if_st main_code_block
-                | func_call ';' main_code_block
                 | method_call ';' main_code_block
                 | while_loop main_code_block
                 | assign_statement ';' main_code_block
@@ -274,7 +249,6 @@ main_code_block :
 code_block_no_definitions : 
                           | if_else_st code_block_no_definitions
                           | if_st code_block_no_definitions
-                          | func_call ';' code_block_no_definitions
                           | method_call ';' code_block_no_definitions
                           | while_loop code_block_no_definitions
                           | assign_statement ';' code_block_no_definitions
@@ -286,7 +260,6 @@ code_block_no_definitions :
 code_block : 
            | if_else_st code_block
            | if_st code_block
-           | func_call ';' code_block
            | method_call ';' code_block
            | while_loop code_block
            | assign_statement ';' code_block
@@ -306,74 +279,31 @@ if_else_st : IF '(' logic_expression ')' '{' code_block_no_definitions '}' ELSE 
 if_st : IF '(' logic_expression ')' '{' code_block_no_definitions '}'
       ;
 
-func_call : ID '(' call_param_list ')' {
-                IdInfo* f=current->getFunction(*$1);
-                if(f==nullptr){
-                    cout << "Undefined function " << *$1 << " called at line " << yylineno << endl;
-                    errorCount++;
-                    $$ = makeExpr("");
-                } else { $$ = makeExpr(f->type);}
-            }
-          ;
-
-class_element : ID '.' ID {
-        IdInfo* obj = current->getVar_current(*$1);
-        if(!obj){
-            cout << "Undefined variable " << *$1 << " at line " << yylineno << endl;
+method_call : class_element '(' call_param_list ')'
+{
+    if(!$1->cur_scope){
+        cout << "Cannot call a non-function element at line " << yylineno << endl;
+        errorCount++;
+        $$ = makeExpr("");
+    } else {
+        IdInfo* method = $1->cur_scope->getFunction(*$1->type);
+        if(!method){
+            cout << "Undefined method at line " << yylineno << endl;
             errorCount++;
             $$ = makeExpr("");
         } else {
-            // Obținem scope-ul clasei obiectului
-            SymTable* classScope = current->getClass(obj->type)->class_scope;
-            if(!classScope){
-                cout << "Class " << obj->type << " has no scope at line " << yylineno << endl;
-                errorCount++;
-                $$ = makeExpr("");
-            } else {
-                IdInfo* field = classScope->getVar_current(*$3);
-                if(!field){
-                    cout << "Undefined class element " << *$3 << " in class " << obj->type << " at line " << yylineno << endl;
-                    errorCount++;
-                    $$ = makeExpr("");
-                } else {
-                    $$ = makeExpr(field->type);
-                }
-            }
-        }
-      }
-    | ID '.' class_element {  
-        // Recursivitate: accesăm câmpul dintr-un câmp care este și el un obiect
-        Expr* left = $3;
-        IdInfo* obj = current->getVar_current(*$1);
-        if(!obj || !left){
-            errorCount++;
-            $$ = makeExpr("");
-        } else {
-            SymTable* classScope = current->getClass(obj->type)->class_scope;
-            if(!classScope){
-                errorCount++;
-                $$ = makeExpr("");
-            } else {
-                IdInfo* field = classScope->getVar_current(*left->type);
-                if(!field){
-                    cout << "Undefined class element " << *left->type << " in class " << obj->type << " at line " << yylineno << endl;
-                    errorCount++;
-                    $$ = makeExpr("");
-                } else {
-                    $$ = makeExpr(field->type);
-                }
-            }
+            // verificare parametri aici (optional)
+            $$ = makeExpr(method->type);
         }
     }
-    ;
-
-method_call : class_element '(' call_param_list ')'
-            ;
+}
+;
 
 while_loop : WHILE '(' logic_expression ')' '{' code_block_no_definitions '}'
            ;
 
-assign_statement : class_element ASSIGN expression_or_logic {
+assign_statement : class_element ASSIGN expression_or_logic
+                 {
                     if(*$3->type!=""){
                         if (*$1->type != *$3->type) {
                             if(*$1->type!="")
@@ -381,26 +311,13 @@ assign_statement : class_element ASSIGN expression_or_logic {
                             errorCount++;
                         }
                     }
-                }
-                 | ID ASSIGN expression_or_logic {
-                    IdInfo* v = current->getVar(*$1);
-                    if (!v) {
-                    cout << "Undeclared variable " << *$1<< " at line " << yylineno << endl;
-                    errorCount++;
-                    }
-                    else if (v->type != *$3->type) {
-                        if(*$3->type!="")
-                            cout << "Cannot assign type "<< *$3->type << " to type "<< v->type << " at line "<< yylineno << endl;
-                        errorCount++;
-                    }
-                }
+                 }
                  ;
 
 expression_or_logic
     : expression
     | logic_expression
     ;
-
 
 return_val : RETURN any_value
            | RETURN STRING_CONST
@@ -412,27 +329,16 @@ return_nothing : RETURN
 var_definition : var
                ;
 
-any_value : func_call
-          | method_call
+any_value : method_call
           | class_element
           | TRU
           | FLS
-          | ID
           | INT_CONST
           | FLOAT_CONST
           ;
 
-any_value_no_bool_const : func_call
-                        | method_call
+any_value_no_bool_const : method_call
                         | class_element
-                        | ID {
-                            IdInfo* v=current->getVar(*$1);
-                            if(v==nullptr){
-                                cout << "Undefined variable " << *$1 << " called at line " << yylineno << endl;
-                                errorCount++;
-                                $$ = makeExpr("");
-                            } else { $$ = makeExpr(v->type);}
-                        }
                         | INT_CONST {
                             $$ = makeExpr("int");
                             $$->i=$1;
@@ -442,12 +348,6 @@ any_value_no_bool_const : func_call
                             $$->f=$1;
                         }
                         ;
-
-/*any_not_const : func_call
-              | method_call
-              | class_element
-              | ID
-              ;*/
 
 logic_expression : logic_expression OR logic_and
                  | logic_and
@@ -471,7 +371,7 @@ logic_atom
     | expression expression_comparisom expression {
         if(*$1->type!=*$3->type){
             if(*$1->type!="")
-                cout << "Invalid comparisom of type " << *$1->type << " and type " <<*$3->type<<"called at line " << yylineno << endl;
+                cout << "Invalid comparisom of type " << *$1->type << " and type " <<*$3->type<<" called at line " << yylineno << endl;
             $$=makeExpr("");
             errorCount++;
         } else {
@@ -626,6 +526,54 @@ call_param_list :
                 | expression
                 ;
 
+class_element
+    : ID
+        {
+            IdInfo* v = current->getVar(*$1);
+            if(!v){
+                cout << "Undefined variable " << *$1 << " at line " << yylineno << endl;
+                errorCount++;
+                $$ = makeExpr("");
+            } else {
+                $$ = makeExpr(v->type);
+            }
+        }
+    | class_element '.' ID
+{
+    SymTable* classScope = nullptr;
+    IdInfo* typeInfo = current->getClass(*$1->type);
+    if(!typeInfo){
+        cout << "Type " << *$1->type << " is not a class at line " << yylineno << endl;
+        errorCount++;
+        $$ = makeExpr("");
+    } else {
+        classScope = typeInfo->class_scope;
+        if(!classScope){
+            cout << "Class " << *$1->type << " has no scope at line " << yylineno << endl;
+            errorCount++;
+            $$ = makeExpr("");
+        } else {
+            // Mai întâi verificăm dacă e câmp
+            IdInfo* field = classScope->getVar_current(*$3);
+            if(field){
+                $$ = makeExpr(field->type);
+            } else {
+                // Dacă nu e câmp, verificăm dacă e funcție (metodă)
+                IdInfo* method = classScope->getFunction(*$3);
+                if(method){
+                    $$ = makeExpr(method->type);
+                    $$->cur_scope = classScope; // marcăm că e un method_call
+                } else {
+                    cout << "Undefined class element or method " << *$3 << " at line " << yylineno << endl;
+                    errorCount++;
+                    $$ = makeExpr("");
+                }
+            }
+        }
+    }
+}
+;
+
 %%
 void yyerror(const char * s){
      cout << "error:" << s << " at line: " << yylineno << endl;
@@ -636,7 +584,5 @@ int main(int argc, char** argv){
      const string global="global";
      current = new SymTable(global);
      yyparse();
-     //cout << "Variables:" <<endl;
-     //current->printVars();
      delete current;
-} 
+}
