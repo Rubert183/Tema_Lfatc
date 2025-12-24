@@ -1,5 +1,6 @@
 %code requires {
   #include <string>
+  #include <vector>
   using namespace std;
 
   class SymTable;
@@ -38,7 +39,8 @@ int errorCount = 0;
     int intVal;
     float floatVal;
     std::string* strVal;
-
+    std::vector<std::string>* types;
+    int expr_comp_op;
     Expr *expr;
 }
 
@@ -50,7 +52,9 @@ int errorCount = 0;
 %type <expr> expression_or_logic
 %type <expr> any_value_no_bool_const
 %type <expr> class_element
-%type <expr> method_call
+%type <expr> call
+%type <types> call_param_list
+%type <expr_comp_op> expression_comparisom
 
 %token CLASS_MK MAIN_MK PRINT RETURN
 %token ASSIGN EQ NEQ LE GE LT GT NR NOT AND OR
@@ -240,7 +244,7 @@ main : MAIN_MK '{' main_code_block '}'
 main_code_block : 
                 | if_else_st main_code_block
                 | if_st main_code_block
-                | method_call ';' main_code_block
+                | call ';' main_code_block
                 | while_loop main_code_block
                 | assign_statement ';' main_code_block
                 | print_statement ';' main_code_block
@@ -249,7 +253,7 @@ main_code_block :
 code_block_no_definitions : 
                           | if_else_st code_block_no_definitions
                           | if_st code_block_no_definitions
-                          | method_call ';' code_block_no_definitions
+                          | call ';' code_block_no_definitions
                           | while_loop code_block_no_definitions
                           | assign_statement ';' code_block_no_definitions
                           | print_statement ';' code_block_no_definitions
@@ -260,7 +264,7 @@ code_block_no_definitions :
 code_block : 
            | if_else_st code_block
            | if_st code_block
-           | method_call ';' code_block
+           | call ';' code_block
            | while_loop code_block
            | assign_statement ';' code_block
            | var_definition code_block
@@ -279,21 +283,67 @@ if_else_st : IF '(' logic_expression ')' '{' code_block_no_definitions '}' ELSE 
 if_st : IF '(' logic_expression ')' '{' code_block_no_definitions '}'
       ;
 
-method_call : class_element '(' call_param_list ')'
+call
+    : ID '(' call_param_list ')'
 {
-    if(!$1->cur_scope){
-        cout << "Cannot call a non-function element at line " << yylineno << endl;
+    IdInfo* f = current->getFunction(*$1);
+    if(!f){
+        cout << "Undefined function " << *$1
+             << " at line " << yylineno << endl;
         errorCount++;
         $$ = makeExpr("");
     } else {
-        IdInfo* method = $1->cur_scope->getFunction(*$1->type);
-        if(!method){
-            cout << "Undefined method at line " << yylineno << endl;
+        if(f->params.size() != $3->size()){
+            cout << "Function " << *$1
+                 << " called with wrong number of parameters at line "
+                 << yylineno << endl;
+            errorCount++;
+        } else {
+            for(size_t i = 0; i < $3->size(); i++){
+                if(f->params[i].first!= (*$3)[i]){
+                    cout << "Type mismatch for parameter "
+                         << i+1 << " in function " << *$1
+                         << " at line " << yylineno << endl;
+                    errorCount++;
+                }
+            }
+        }
+        $$ = makeExpr(f->type);
+    }
+}
+| class_element '.' ID '(' call_param_list ')'
+{
+    IdInfo* typeInfo = current->getClass(*$1->type);
+    if(!typeInfo){
+        cout << "Type " << *$1->type
+             << " is not a class at line " << yylineno << endl;
+        errorCount++;
+        $$ = makeExpr("");
+    } else {
+        SymTable* classScope = typeInfo->class_scope;
+        IdInfo* m = classScope->getFunction(*$3);
+        if(!m){
+            cout << "Undefined method " << *$3
+                 << " at line " << yylineno << endl;
             errorCount++;
             $$ = makeExpr("");
         } else {
-            // verificare parametri aici (optional)
-            $$ = makeExpr(method->type);
+            if(m->params.size() != $5->size()){
+                cout << "Method " << *$3
+                     << " called with wrong number of parameters at line "
+                     << yylineno << endl;
+                errorCount++;
+            } else {
+                for(size_t i = 0; i < $5->size(); i++){
+                    if(m->params[i].first != (*$5)[i]){
+                        cout << "Type mismatch for parameter "
+                             << i+1 << " in method " << *$3
+                             << " at line " << yylineno << endl;
+                        errorCount++;
+                    }
+                }
+            }
+            $$ = makeExpr(m->type);
         }
     }
 }
@@ -329,7 +379,7 @@ return_nothing : RETURN
 var_definition : var
                ;
 
-any_value : method_call
+any_value : call
           | class_element
           | TRU
           | FLS
@@ -337,7 +387,7 @@ any_value : method_call
           | FLOAT_CONST
           ;
 
-any_value_no_bool_const : method_call
+any_value_no_bool_const : call
                         | class_element
                         | INT_CONST {
                             $$ = makeExpr("int");
@@ -349,12 +399,22 @@ any_value_no_bool_const : method_call
                         }
                         ;
 
-logic_expression : logic_expression OR logic_and
-                 | logic_and
+logic_expression : logic_expression OR logic_and {
+                    $$ = makeExpr("bool");
+                    $$->b = $1->b || $3->b;
+                 }
+                 | logic_and {
+                    $$ = $1; 
+                 }
                  ;
 
-logic_and : logic_and AND logic_not
-          | logic_not
+logic_and : logic_and AND logic_not {
+            $$ = makeExpr("bool");
+            $$->b = $1->b && $3->b;
+            }
+          | logic_not {
+            $$ = $1; 
+          }
           ;
 
 logic_not : NOT logic_not {
@@ -375,19 +435,77 @@ logic_atom
             $$=makeExpr("");
             errorCount++;
         } else {
-            $$=makeExpr("bool");
+            if(*$1->type=="int" || *$3->type=="float"){
+                $$=makeExpr("bool");
+                switch($2){
+                    case 1:{
+                        if(*$1->type=="int"){
+                            $$->b= $1->i < $3->i;
+                        } else {
+                            $$->b= $1->f < $3->f;
+                        }
+                        break;
+                    }
+                    case 2:{
+                        if(*$1->type=="int"){
+                            $$->b= $1->i == $3->i;
+                        } else {
+                            $$->b= $1->f == $3->f;
+                        }
+                        break;
+                    }
+                    case 3:{
+                        if(*$1->type=="int"){
+                            $$->b= $1->i != $3->i;
+                        } else {
+                            $$->b= $1->f != $3->f;
+                        }
+                        break;
+                    }
+                    case 4:{
+                        if(*$1->type=="int"){
+                            $$->b= $1->i > $3->i;
+                        } else {
+                            $$->b= $1->f > $3->f;
+                        }
+                        break;
+                    }
+                    case 5:{
+                        if(*$1->type=="int"){
+                            $$->b= $1->i <= $3->i;
+                        } else {
+                            $$->b= $1->f <= $3->f;
+                        }
+                        break;
+                    }
+                    case 6:{
+                        if(*$1->type=="int"){
+                            $$->b= $1->i >= $3->i;
+                        } else {
+                            $$->b= $1->f >= $3->f;
+                        }
+                        break;
+                    }
+                    default:{break;}
+                }
+            }
+            else{
+                cout << "Invalid comparisom of elements of the type " << *$1->type <<" called at line " << yylineno << endl;
+                $$=makeExpr("");
+                errorCount++;
+            }
         }
     }
     | TRU {$$=makeExpr("bool"); $$->b=true;}
     | FLS {$$=makeExpr("bool"); $$->b=false;}
     ;
 
-expression_comparisom : LT
-                      | EQ
-                      | NEQ
-                      | GT
-                      | LE
-                      | GE
+expression_comparisom : LT {$$=1;}
+                      | EQ {$$=2;}
+                      | NEQ {$$=3;}
+                      | GT {$$=4;}
+                      | LE {$$=5;}
+                      | GE {$$=6;}
                       ;
 
 expression : '(' expression ')' {$$=$2;}
@@ -519,12 +637,33 @@ expression : '(' expression ')' {$$=$2;}
            | any_value_no_bool_const
            ;
 
-call_param_list : 
-                | expression ',' call_param_list
-                | logic_expression ',' call_param_list
-                | logic_expression
-                | expression
-                ;
+call_param_list
+    :
+    {
+        $$ = new vector<string>();
+    }
+    | expression ',' call_param_list
+    {
+        $$ = $3;
+        $$->insert($$->begin(), *$1->type);
+    }
+    | logic_expression ',' call_param_list
+    {
+        $$ = $3;
+        $$->insert($$->begin(), "bool");
+    }
+    | expression
+    {
+        $$ = new vector<string>();
+        $$->push_back(*$1->type);
+    }
+    | logic_expression
+    {
+        $$ = new vector<string>();
+        $$->push_back("bool");
+    }
+    ;
+
 
 class_element
     : ID
@@ -562,7 +701,7 @@ class_element
                 IdInfo* method = classScope->getFunction(*$3);
                 if(method){
                     $$ = makeExpr(method->type);
-                    $$->cur_scope = classScope; // marcăm că e un method_call
+                    $$->cur_scope = classScope; // marcăm că e un call
                 } else {
                     cout << "Undefined class element or method " << *$3 << " at line " << yylineno << endl;
                     errorCount++;

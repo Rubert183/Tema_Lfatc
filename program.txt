@@ -1,54 +1,27 @@
-class PI {
-    int get_pi(){
+
+int a1,b1;
+float c;
+int cmmdc(int a,int b){
+    int r;
+    while(b!=0){
+        r:=a%b;
+        a:=b;
+        b:=r;
+    }
+    return a;
+};
+
+class MyClass{
+    int a,
+    int b,
+    float rez(){
         return 3.14;
-    },
-    PI new_pi(){
-        PI rez;
-        return rez;
-    },
-    bool is_pi(float nr){
-        bool rez;
-        if(nr==3.14){
-            rez:=true;
-        }
-        else{
-            rez:=false;
-        }
-        return rez;
     }
 };
-
-class Math
-{
-    PI pi,
-    float e,
-    int cmmdc(int a,int b){
-        int r;
-        while(a*2==2){
-            r:=a%b;
-            a:=b;
-            b:=r;
-            if(not b==0 && a>0){
-                return a;
-            }
-        }
-        return a;
-    }
-};
-
-float rez;
-
-float calc(int a,int b, Math m1, Math m2){
-    rez := m2.pi.get_pi() + 4.301 - m1.cmmdc(a,b);
-    return rez;
-};
-
-int a, b;
-Math m1,m2;
-PI p;
-
-main{
-    b := 4 + 3;
-    f(5);
-    rez:=calc(a,b,m1,m2);
+MyClass c1;
+main {
+    a1:=5;
+    b1:=3;
+    c:=c1.rez();
+    Print(cmmdc(a1,b1));
 }

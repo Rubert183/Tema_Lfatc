@@ -48,6 +48,7 @@ extern int yydebug;
 #line 1 "limbaj.y"
 
   #include <string>
+  #include <vector>
   using namespace std;
 
   class SymTable;
@@ -67,7 +68,7 @@ extern int yydebug;
         return e;
     };
 
-#line 71 "limbaj.tab.h"
+#line 72 "limbaj.tab.h"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -111,15 +112,16 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 37 "limbaj.y"
+#line 38 "limbaj.y"
 
     int intVal;
     float floatVal;
     std::string* strVal;
-
+    std::vector<std::string>* types;
+    int expr_comp_op;
     Expr *expr;
 
-#line 123 "limbaj.tab.h"
+#line 125 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
