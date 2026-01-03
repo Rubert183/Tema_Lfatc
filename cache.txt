@@ -1,263 +1,127 @@
-
-%code requires {
-  #include <string>
-  using namespace std;
-}
-
 %{
 #include <iostream>
+#include <vector>
+#include "AST.h"
 #include "SymTable.h"
-extern FILE* yyin;
-extern char* yytext;
+
+using namespace std;
+
 extern int yylineno;
 extern int yylex();
-void yyerror(const char * s);
-class SymTable* current;
-int errorCount = 0;
+void yyerror(const char*);
+
+SymTable* currentSym;
 %}
 
 %union {
     int intVal;
     float floatVal;
-    std::string* strVal;
-    struct Expr {
-        std::string* type;
-        int i;
-        float f;
-        std::string* s;
-    } *expr;
+    char* strVal;
+    ASTNode* ast;
 }
 
-//%destructor { delete $$; } <Str> 
+%token IF ELSE WHILE
+%token PRINT
+%token TRU FLS
+%token AND OR NOT
+%token EQ NEQ LT LE GT GE
+%token ASSIGN
 
-%token CLASS_MK MAIN_MK PRINT RETURN
-%token ASSIGN EQ NEQ LE GE LT GT NR NOT AND OR
-%token IF WHILE ELSE TRU FLS
 %token <intVal> INT_CONST
 %token <floatVal> FLOAT_CONST
-%token <strVal> STRING_CONST
-%token <strVal> ID TYPE
-%start progr
+%token <strVal> ID
 
-%left '+' '-' 
+%type <ast> expr logic_expr stmt stmt_list
+
+%left OR
+%left AND
+%left EQ NEQ LT LE GT GE
+%left '+' '-'
 %left '*' '/' '%'
+%right NOT
+%right UMINUS
 
-
-
-%%
-progr : top_level main {if (errorCount == 0) cout<< "The program is correct!" << endl;}
-      ;
-
-top_level :
-          | top_level top_level_decl
-          ;
-
-top_level_decl : class 
-               | func
-               | var 
-               ;
-list_var : ID
-         | ID ',' list_var
-         ;
-
-var : TYPE list_var ';'
-    | ID list_var ';'
-    ;
-
-func: TYPE ID '(' opt_param_list ')' '{' code_block '}' ';'
-    | ID ID '(' opt_param_list ')' '{' code_block '}' ';'
-    ;
-
-opt_param_list : 
-               | param_list 
-               ;
-
-param_list : param
-           | param_list ','  param 
-           ;
-
-param : TYPE ID 
-      | ID ID
-      ; 
-
-class : CLASS_MK ID '{' class_list '}' ';'
-      ;
-
-class_list : field
-           | method
-           | class_list ',' field
-           | class_list ',' method
-           ;
-
-field : TYPE ID
-      | ID ID 
-      ;
-
-method : TYPE ID '(' opt_param_list ')' '{' code_block '}'
-       | ID ID '(' opt_param_list ')' '{' code_block '}'
-       ;
-
-main : MAIN_MK '{' main_code_block '}'
-     ;
-
-main_code_block : 
-                | if_else_st main_code_block
-                | if_st main_code_block
-                | func_call ';' main_code_block
-                | method_call ';' main_code_block
-                | while_loop main_code_block
-                | assign_statement ';' main_code_block
-                | print_statement ';' main_code_block
-                ;
-
-code_block_no_definitions : 
-                          | if_else_st code_block_no_definitions
-                          | if_st code_block_no_definitions
-                          | func_call ';' code_block_no_definitions
-                          | method_call ';' code_block_no_definitions
-                          | while_loop code_block_no_definitions
-                          | assign_statement ';' code_block_no_definitions
-                          | print_statement ';' code_block_no_definitions
-                          | return_val ';'
-                          | return_nothing ';'
-                          ;
-
-code_block : 
-           | if_else_st code_block
-           | if_st code_block
-           | func_call ';' code_block
-           | method_call ';' code_block
-           | while_loop code_block
-           | assign_statement ';' code_block
-           | var_definition code_block
-           | print_statement ';' code_block_no_definitions
-           | return_nothing ';'
-           | return_val ';'
-           ;
-
-print_statement : PRINT '(' expression ')'
-                | PRINT '(' STRING_CONST ')'
-                ;
-
-if_else_st : IF '(' logic_expression ')' '{' code_block_no_definitions '}' ELSE '{' code_block_no_definitions '}'
-           ;
-
-if_st : IF '(' logic_expression ')' '{' code_block_no_definitions '}'
-      ;
-
-func_call : ID '(' call_param_list ')'
-          ;
-
-class_element : ID '.' ID 
-              | ID '.' class_element
-              ;
-
-method_call : class_element '(' call_param_list ')'
-            ;
-
-while_loop : WHILE '(' logic_expression ')' '{' code_block_no_definitions '}'
-           ;
-
-assign_statement : class_element ASSIGN expression_or_logic
-                 | ID ASSIGN expression_or_logic
-                 ;
-
-expression_or_logic
-    : expression
-    | logic_expression
-    ;
-
-
-return_val : RETURN any_value
-           | RETURN STRING_CONST
-           ;
-
-return_nothing : RETURN
-               ;
-
-var_definition : var
-               ;
-
-any_value : func_call
-          | method_call
-          | class_element
-          | TRU
-          | FLS
-          | ID
-          | INT_CONST
-          | FLOAT_CONST
-          ;
-
-any_value_no_bool_const : func_call
-                        | method_call
-                        | class_element
-                        | ID
-                        | INT_CONST
-                        | FLOAT_CONST
-                        ;
-
-any_not_const : func_call
-              | method_call
-              | class_element
-              | ID
-              ;
-
-form_expression : '(' expression ')'
-                | expression
-                ;
-
-logic_expression
-    : '(' logic_expression ')' logic_bool_operator '(' logic_expression ')'
-    | form_expression bool_operator form_expression
-    | NOT logic_expression
-    | NOT '(' logic_expression ')'
-    | NOT any_not_const
-    | TRU
-    | FLS
-    ;
-
-logic_bool_operator: EQ
-                   | NEQ
-                   | OR
-                   | AND
-                   ;
-bool_operator
-    : LT
-    | EQ
-    | NEQ
-    | GT
-    | LE
-    | GE
-    | AND
-    | OR
-    ;
-
-expression : expression '+' expression
-           | expression '-' expression
-           | expression '/' expression
-           | expression '*' expression
-           | expression '%' expression
-           | any_value_no_bool_const
-           ;
-
-call_param_list : 
-                | expression ',' call_param_list
-                | logic_expression ',' call_param_list
-                | logic_expression
-                | expression
-                ;
+%start program
 
 %%
-void yyerror(const char * s){
-     cout << "error:" << s << " at line: " << yylineno << endl;
+
+program
+    : stmt_list {
+        for (ASTNode* s : *((vector<ASTNode*>*)$1)) {
+            if (s) s->eval(*currentSym);
+        }
+      }
+    ;
+
+stmt_list
+    : stmt {
+        $$ = new vector<ASTNode*>();
+        ((vector<ASTNode*>*)$$)->push_back($1);
+      }
+    | stmt_list stmt {
+        ((vector<ASTNode*>*)$1)->push_back($2);
+        $$ = $1;
+      }
+    ;
+
+stmt
+    : ID ASSIGN expr ';' {
+        $$ = new ASTAssign(new ASTId($1), $3);
+      }
+    | PRINT '(' expr ')' ';' {
+        $$ = new ASTPrint($3);
+      }
+    | IF '(' logic_expr ')' stmt {
+        $$ = new ASTNull();
+      }
+    | IF '(' logic_expr ')' stmt ELSE stmt {
+        $$ = new ASTNull();
+      }
+    | WHILE '(' logic_expr ')' stmt {
+        $$ = new ASTNull();
+      }
+    | '{' stmt_list '}' {
+        $$ = new ASTNull();
+      }
+    ;
+
+logic_expr
+    : expr EQ expr   { $$ = new ASTBinaryOp("==", $1, $3); }
+    | expr NEQ expr  { $$ = new ASTBinaryOp("!=", $1, $3); }
+    | expr LT expr   { $$ = new ASTBinaryOp("<",  $1, $3); }
+    | expr LE expr   { $$ = new ASTBinaryOp("<=", $1, $3); }
+    | expr GT expr   { $$ = new ASTBinaryOp(">",  $1, $3); }
+    | expr GE expr   { $$ = new ASTBinaryOp(">=", $1, $3); }
+    | logic_expr AND logic_expr { $$ = new ASTBinaryOp("&&", $1, $3); }
+    | logic_expr OR  logic_expr { $$ = new ASTBinaryOp("||", $1, $3); }
+    | NOT logic_expr { $$ = new ASTUnaryOp("not", $2); }
+    | '(' logic_expr ')' { $$ = $2; }
+    | TRU { $$ = new ASTConstant(Value::makeBool(true)); }
+    | FLS { $$ = new ASTConstant(Value::makeBool(false)); }
+    ;
+
+expr
+    : expr '+' expr { $$ = new ASTBinaryOp("+", $1, $3); }
+    | expr '-' expr { $$ = new ASTBinaryOp("-", $1, $3); }
+    | expr '*' expr { $$ = new ASTBinaryOp("*", $1, $3); }
+    | expr '/' expr { $$ = new ASTBinaryOp("/", $1, $3); }
+    | expr '%' expr { $$ = new ASTBinaryOp("%", $1, $3); }
+    | '-' expr %prec UMINUS { $$ = new ASTUnaryOp("-", $2); }
+    | '(' expr ')' { $$ = $2; }
+    | INT_CONST { $$ = new ASTConstant(Value::makeInt($1)); }
+    | FLOAT_CONST { $$ = new ASTConstant(Value::makeFloat($1)); }
+    | ID { $$ = new ASTId($1); }
+    ;
+
+%%
+
+void yyerror(const char* s) {
+    cout << "Error: " << s << " at line " << yylineno << endl;
 }
 
-int main(int argc, char** argv){
-     yyin=fopen(argv[1],"r");
-     const string global="global";
-     current = new SymTable(global);
-     yyparse();
-     //cout << "Variables:" <<endl;
-     //current->printVars();
-     delete current;
-} 
+int main() {
+    currentSym = new SymTable("global");
+    yyparse();
+    delete currentSym;
+    return 0;
+}

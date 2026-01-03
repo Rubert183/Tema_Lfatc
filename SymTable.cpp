@@ -25,6 +25,10 @@ void SymTable::addClass(const string& name) {
     classes[name] = cls;
 }
 
+void SymTable::updateVar(const string& name, const Value& value) {
+    variables[name].value = value;
+}
+
 bool SymTable::existsVar(const string& name) const {
     if (variables.count(name))
         return true;
