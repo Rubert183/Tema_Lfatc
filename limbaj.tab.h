@@ -47,28 +47,15 @@ extern int yydebug;
 /* "%code requires" blocks.  */
 #line 1 "limbaj.y"
 
-  #include <string>
-  #include <vector>
-  using namespace std;
+    #include <string>
+    #include <vector>
+    class ASTNode;
+    class SymTable;
+    struct Expr;
+    struct ProgramLists;
+    struct CallParams;
 
-  class SymTable;
-  struct Expr {
-    std::string* type;
-    std::string* name;
-    class SymTable* cur_scope=nullptr;
-    int i;
-    float f;
-    bool b;
-    std::string* s;
-  };
-
-  inline Expr* makeExpr(const string& t) {
-        Expr* e = new Expr();
-        e->type = new string(t);
-        return e;
-    };
-
-#line 72 "limbaj.tab.h"
+#line 59 "limbaj.tab.h"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -112,16 +99,19 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 38 "limbaj.y"
+#line 44 "limbaj.y"
 
     int intVal;
     float floatVal;
     std::string* strVal;
     std::vector<std::string>* types;
-    int expr_comp_op;
+    std::vector<ASTNode*>* ast_list;
     Expr *expr;
+    ASTNode* ast;
+    ProgramLists* program_lists;
+    CallParams* call_params;
 
-#line 125 "limbaj.tab.h"
+#line 115 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

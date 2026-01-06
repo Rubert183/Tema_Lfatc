@@ -1,0 +1,2278 @@
+Terminals which are not used
+
+   NR
+   '<'
+   '>'
+
+
+State 81 conflicts: 1 reduce/reduce
+State 100 conflicts: 1 shift/reduce
+
+
+Grammar
+
+    0 $accept: progr $end
+
+    1 progr: top_level main
+
+    2 top_level: /* empty */
+    3          | top_level top_level_decl
+
+    4 top_level_decl: class
+    5               | func
+    6               | var
+
+    7 @1: /* empty */
+
+    8 list_var: ID @1 ',' list_var
+    9         | ID
+
+   10 type_or_class: TYPE
+   11              | ID
+
+   12 var: type_or_class list_var ';'
+
+   13 @2: /* empty */
+
+   14 func: type_or_class ID @2 '(' opt_param_list ')' '{' func_body '}'
+
+   15 func_body: code_block
+
+   16 opt_param_list: /* empty */
+   17               | param_list
+
+   18 param_list: param
+   19           | param_list ',' param
+
+   20 param: type_or_class ID
+
+   21 @3: /* empty */
+
+   22 class: CLASS_MK ID @3 '{' class_list '}' ';'
+
+   23 class_list: field
+   24           | method
+   25           | class_list ',' field
+   26           | class_list ',' method
+
+   27 field: type_or_class ID
+
+   28 @4: /* empty */
+
+   29 method: type_or_class ID @4 '(' opt_param_list ')' '{' method_body '}'
+
+   30 method_body: code_block
+
+   31 main: MAIN_MK '{' main_code_block '}'
+
+   32 main_code_block: /* empty */
+   33                | main_code_block if_else_st
+   34                | main_code_block if_st
+   35                | main_code_block call_statement
+   36                | main_code_block while_loop
+   37                | main_code_block assign_statement
+   38                | main_code_block print_statement
+
+   39 code_block_no_definitions: /* empty */
+   40                          | code_block_no_definitions if_else_st
+   41                          | code_block_no_definitions if_st
+   42                          | code_block_no_definitions call_statement
+   43                          | code_block_no_definitions while_loop
+   44                          | code_block_no_definitions assign_statement
+   45                          | code_block_no_definitions print_statement
+   46                          | code_block_no_definitions return_statement
+
+   47 return_statement: return_val ';'
+   48                 | return_nothing ';'
+
+   49 code_block: /* empty */
+   50           | code_block if_else_st
+   51           | code_block if_st
+   52           | code_block call_statement
+   53           | code_block while_loop
+   54           | code_block assign_statement
+   55           | code_block var_definition
+   56           | code_block print_statement
+   57           | code_block return_statement
+
+   58 print_statement: PRINT '(' expression ')' ';'
+
+   59 if_else_st: IF '(' logic_expression ')' '{' code_block_no_definitions '}' ELSE '{' code_block_no_definitions '}'
+
+   60 if_st: IF '(' logic_expression ')' '{' code_block_no_definitions '}'
+
+   61 call: ID '(' call_params ')'
+   62     | class_element '.' ID '(' call_params ')'
+
+   63 call_statement: call
+
+   64 while_loop: WHILE '(' logic_expression ')' '{' code_block_no_definitions '}'
+
+   65 assign_statement: class_element ASSIGN expression_or_logic ';'
+
+   66 expression_or_logic: expression
+   67                    | logic_expression
+
+   68 return_val: RETURN any_value
+   69           | RETURN STRING_CONST
+
+   70 return_nothing: RETURN
+
+   71 var_definition: var
+
+   72 any_value: call
+   73          | class_element
+   74          | TRU
+   75          | FLS
+   76          | INT_CONST
+   77          | FLOAT_CONST
+
+   78 primary_expression: class_element
+   79                   | call
+   80                   | INT_CONST
+   81                   | FLOAT_CONST
+   82                   | STRING_CONST
+
+   83 arithmetic_expression: primary_expression
+   84                      | '(' arithmetic_expression ')'
+   85                      | arithmetic_expression '+' arithmetic_expression
+   86                      | arithmetic_expression '-' arithmetic_expression
+   87                      | arithmetic_expression '*' arithmetic_expression
+   88                      | arithmetic_expression '/' arithmetic_expression
+   89                      | arithmetic_expression '%' arithmetic_expression
+
+   90 comparison_expression: arithmetic_expression
+   91                      | arithmetic_expression expression_comparisom arithmetic_expression
+
+   92 expression_comparisom: LT
+   93                      | EQ
+   94                      | NEQ
+   95                      | GT
+   96                      | LE
+   97                      | GE
+
+   98 expression: arithmetic_expression
+
+   99 logic_atom: comparison_expression
+  100           | '(' logic_expression ')'
+  101           | TRU
+  102           | FLS
+
+  103 logic_not: NOT logic_not
+  104          | logic_atom
+
+  105 logic_and: logic_and AND logic_not
+  106          | logic_not
+
+  107 logic_expression: logic_expression OR logic_and
+  108                 | logic_and
+
+  109 call_params: /* empty */
+  110            | expression ',' call_params
+  111            | expression
+
+  112 class_element: ID
+  113              | class_element '.' ID
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+'%' (37) 89
+'(' (40) 14 29 58 59 60 61 62 64 84 100
+')' (41) 14 29 58 59 60 61 62 64 84 100
+'*' (42) 87
+'+' (43) 85
+',' (44) 8 19 25 26 110
+'-' (45) 86
+'.' (46) 62 113
+'/' (47) 88
+';' (59) 12 22 47 48 58 65
+'<' (60)
+'>' (62)
+'{' (123) 14 22 29 31 59 60 64
+'}' (125) 14 22 29 31 59 60 64
+error (256)
+CLASS_MK (258) 22
+MAIN_MK (259) 31
+PRINT (260) 58
+RETURN (261) 68 69 70
+ASSIGN (262) 65
+EQ (263) 93
+NEQ (264) 94
+LE (265) 96
+GE (266) 97
+LT (267) 92
+GT (268) 95
+NR (269)
+NOT (270) 103
+AND (271) 105
+OR (272) 107
+IF (273) 59 60
+WHILE (274) 64
+ELSE (275) 59
+TRU (276) 74 101
+FLS (277) 75 102
+INT_CONST (278) 76 80
+FLOAT_CONST (279) 77 81
+STRING_CONST (280) 69 82
+ID (281) 8 9 11 14 20 22 27 29 61 62 112 113
+TYPE (282) 10
+
+
+Nonterminals, with rules where they appear
+
+$accept (42)
+    on left: 0
+progr (43)
+    on left: 1, on right: 0
+top_level (44)
+    on left: 2 3, on right: 1 3
+top_level_decl (45)
+    on left: 4 5 6, on right: 3
+list_var (46)
+    on left: 8 9, on right: 8 12
+@1 (47)
+    on left: 7, on right: 8
+type_or_class (48)
+    on left: 10 11, on right: 12 14 20 27 29
+var (49)
+    on left: 12, on right: 6 71
+func (50)
+    on left: 14, on right: 5
+@2 (51)
+    on left: 13, on right: 14
+func_body (52)
+    on left: 15, on right: 14
+opt_param_list (53)
+    on left: 16 17, on right: 14 29
+param_list (54)
+    on left: 18 19, on right: 17 19
+param (55)
+    on left: 20, on right: 18 19
+class (56)
+    on left: 22, on right: 4
+@3 (57)
+    on left: 21, on right: 22
+class_list (58)
+    on left: 23 24 25 26, on right: 22 25 26
+field (59)
+    on left: 27, on right: 23 25
+method (60)
+    on left: 29, on right: 24 26
+@4 (61)
+    on left: 28, on right: 29
+method_body (62)
+    on left: 30, on right: 29
+main (63)
+    on left: 31, on right: 1
+main_code_block (64)
+    on left: 32 33 34 35 36 37 38, on right: 31 33 34 35 36 37 38
+code_block_no_definitions (65)
+    on left: 39 40 41 42 43 44 45 46, on right: 40 41 42 43 44 45 46
+    59 60 64
+return_statement (66)
+    on left: 47 48, on right: 46 57
+code_block (67)
+    on left: 49 50 51 52 53 54 55 56 57, on right: 15 30 50 51 52 53
+    54 55 56 57
+print_statement (68)
+    on left: 58, on right: 38 45 56
+if_else_st (69)
+    on left: 59, on right: 33 40 50
+if_st (70)
+    on left: 60, on right: 34 41 51
+call (71)
+    on left: 61 62, on right: 63 72 79
+call_statement (72)
+    on left: 63, on right: 35 42 52
+while_loop (73)
+    on left: 64, on right: 36 43 53
+assign_statement (74)
+    on left: 65, on right: 37 44 54
+expression_or_logic (75)
+    on left: 66 67, on right: 65
+return_val (76)
+    on left: 68 69, on right: 47
+return_nothing (77)
+    on left: 70, on right: 48
+var_definition (78)
+    on left: 71, on right: 55
+any_value (79)
+    on left: 72 73 74 75 76 77, on right: 68
+primary_expression (80)
+    on left: 78 79 80 81 82, on right: 83
+arithmetic_expression (81)
+    on left: 83 84 85 86 87 88 89, on right: 84 85 86 87 88 89 90 91
+    98
+comparison_expression (82)
+    on left: 90 91, on right: 99
+expression_comparisom (83)
+    on left: 92 93 94 95 96 97, on right: 91
+expression (84)
+    on left: 98, on right: 58 66 110 111
+logic_atom (85)
+    on left: 99 100 101 102, on right: 104
+logic_not (86)
+    on left: 103 104, on right: 103 105 106
+logic_and (87)
+    on left: 105 106, on right: 105 107 108
+logic_expression (88)
+    on left: 107 108, on right: 59 60 64 67 100 107
+call_params (89)
+    on left: 109 110 111, on right: 61 62 110
+class_element (90)
+    on left: 112 113, on right: 62 65 73 78 113
+
+
+state 0
+
+    0 $accept: . progr $end
+
+    $default  reduce using rule 2 (top_level)
+
+    progr      go to state 1
+    top_level  go to state 2
+
+
+state 1
+
+    0 $accept: progr . $end
+
+    $end  shift, and go to state 3
+
+
+state 2
+
+    1 progr: top_level . main
+    3 top_level: top_level . top_level_decl
+
+    CLASS_MK  shift, and go to state 4
+    MAIN_MK   shift, and go to state 5
+    ID        shift, and go to state 6
+    TYPE      shift, and go to state 7
+
+    top_level_decl  go to state 8
+    type_or_class   go to state 9
+    var             go to state 10
+    func            go to state 11
+    class           go to state 12
+    main            go to state 13
+
+
+state 3
+
+    0 $accept: progr $end .
+
+    $default  accept
+
+
+state 4
+
+   22 class: CLASS_MK . ID @3 '{' class_list '}' ';'
+
+    ID  shift, and go to state 14
+
+
+state 5
+
+   31 main: MAIN_MK . '{' main_code_block '}'
+
+    '{'  shift, and go to state 15
+
+
+state 6
+
+   11 type_or_class: ID .
+
+    $default  reduce using rule 11 (type_or_class)
+
+
+state 7
+
+   10 type_or_class: TYPE .
+
+    $default  reduce using rule 10 (type_or_class)
+
+
+state 8
+
+    3 top_level: top_level top_level_decl .
+
+    $default  reduce using rule 3 (top_level)
+
+
+state 9
+
+   12 var: type_or_class . list_var ';'
+   14 func: type_or_class . ID @2 '(' opt_param_list ')' '{' func_body '}'
+
+    ID  shift, and go to state 16
+
+    list_var  go to state 17
+
+
+state 10
+
+    6 top_level_decl: var .
+
+    $default  reduce using rule 6 (top_level_decl)
+
+
+state 11
+
+    5 top_level_decl: func .
+
+    $default  reduce using rule 5 (top_level_decl)
+
+
+state 12
+
+    4 top_level_decl: class .
+
+    $default  reduce using rule 4 (top_level_decl)
+
+
+state 13
+
+    1 progr: top_level main .
+
+    $default  reduce using rule 1 (progr)
+
+
+state 14
+
+   22 class: CLASS_MK ID . @3 '{' class_list '}' ';'
+
+    $default  reduce using rule 21 (@3)
+
+    @3  go to state 18
+
+
+state 15
+
+   31 main: MAIN_MK '{' . main_code_block '}'
+
+    $default  reduce using rule 32 (main_code_block)
+
+    main_code_block  go to state 19
+
+
+state 16
+
+    8 list_var: ID . @1 ',' list_var
+    9         | ID .
+   14 func: type_or_class ID . @2 '(' opt_param_list ')' '{' func_body '}'
+
+    ';'       reduce using rule 9 (list_var)
+    '('       reduce using rule 13 (@2)
+    $default  reduce using rule 7 (@1)
+
+    @1  go to state 20
+    @2  go to state 21
+
+
+state 17
+
+   12 var: type_or_class list_var . ';'
+
+    ';'  shift, and go to state 22
+
+
+state 18
+
+   22 class: CLASS_MK ID @3 . '{' class_list '}' ';'
+
+    '{'  shift, and go to state 23
+
+
+state 19
+
+   31 main: MAIN_MK '{' main_code_block . '}'
+   33 main_code_block: main_code_block . if_else_st
+   34                | main_code_block . if_st
+   35                | main_code_block . call_statement
+   36                | main_code_block . while_loop
+   37                | main_code_block . assign_statement
+   38                | main_code_block . print_statement
+
+    PRINT  shift, and go to state 24
+    IF     shift, and go to state 25
+    WHILE  shift, and go to state 26
+    ID     shift, and go to state 27
+    '}'    shift, and go to state 28
+
+    print_statement   go to state 29
+    if_else_st        go to state 30
+    if_st             go to state 31
+    call              go to state 32
+    call_statement    go to state 33
+    while_loop        go to state 34
+    assign_statement  go to state 35
+    class_element     go to state 36
+
+
+state 20
+
+    8 list_var: ID @1 . ',' list_var
+
+    ','  shift, and go to state 37
+
+
+state 21
+
+   14 func: type_or_class ID @2 . '(' opt_param_list ')' '{' func_body '}'
+
+    '('  shift, and go to state 38
+
+
+state 22
+
+   12 var: type_or_class list_var ';' .
+
+    $default  reduce using rule 12 (var)
+
+
+state 23
+
+   22 class: CLASS_MK ID @3 '{' . class_list '}' ';'
+
+    ID    shift, and go to state 6
+    TYPE  shift, and go to state 7
+
+    type_or_class  go to state 39
+    class_list     go to state 40
+    field          go to state 41
+    method         go to state 42
+
+
+state 24
+
+   58 print_statement: PRINT . '(' expression ')' ';'
+
+    '('  shift, and go to state 43
+
+
+state 25
+
+   59 if_else_st: IF . '(' logic_expression ')' '{' code_block_no_definitions '}' ELSE '{' code_block_no_definitions '}'
+   60 if_st: IF . '(' logic_expression ')' '{' code_block_no_definitions '}'
+
+    '('  shift, and go to state 44
+
+
+state 26
+
+   64 while_loop: WHILE . '(' logic_expression ')' '{' code_block_no_definitions '}'
+
+    '('  shift, and go to state 45
+
+
+state 27
+
+   61 call: ID . '(' call_params ')'
+  112 class_element: ID .
+
+    '('  shift, and go to state 46
+
+    $default  reduce using rule 112 (class_element)
+
+
+state 28
+
+   31 main: MAIN_MK '{' main_code_block '}' .
+
+    $default  reduce using rule 31 (main)
+
+
+state 29
+
+   38 main_code_block: main_code_block print_statement .
+
+    $default  reduce using rule 38 (main_code_block)
+
+
+state 30
+
+   33 main_code_block: main_code_block if_else_st .
+
+    $default  reduce using rule 33 (main_code_block)
+
+
+state 31
+
+   34 main_code_block: main_code_block if_st .
+
+    $default  reduce using rule 34 (main_code_block)
+
+
+state 32
+
+   63 call_statement: call .
+
+    $default  reduce using rule 63 (call_statement)
+
+
+state 33
+
+   35 main_code_block: main_code_block call_statement .
+
+    $default  reduce using rule 35 (main_code_block)
+
+
+state 34
+
+   36 main_code_block: main_code_block while_loop .
+
+    $default  reduce using rule 36 (main_code_block)
+
+
+state 35
+
+   37 main_code_block: main_code_block assign_statement .
+
+    $default  reduce using rule 37 (main_code_block)
+
+
+state 36
+
+   62 call: class_element . '.' ID '(' call_params ')'
+   65 assign_statement: class_element . ASSIGN expression_or_logic ';'
+  113 class_element: class_element . '.' ID
+
+    ASSIGN  shift, and go to state 47
+    '.'     shift, and go to state 48
+
+
+state 37
+
+    8 list_var: ID @1 ',' . list_var
+
+    ID  shift, and go to state 49
+
+    list_var  go to state 50
+
+
+state 38
+
+   14 func: type_or_class ID @2 '(' . opt_param_list ')' '{' func_body '}'
+
+    ID    shift, and go to state 6
+    TYPE  shift, and go to state 7
+
+    $default  reduce using rule 16 (opt_param_list)
+
+    type_or_class   go to state 51
+    opt_param_list  go to state 52
+    param_list      go to state 53
+    param           go to state 54
+
+
+state 39
+
+   27 field: type_or_class . ID
+   29 method: type_or_class . ID @4 '(' opt_param_list ')' '{' method_body '}'
+
+    ID  shift, and go to state 55
+
+
+state 40
+
+   22 class: CLASS_MK ID @3 '{' class_list . '}' ';'
+   25 class_list: class_list . ',' field
+   26           | class_list . ',' method
+
+    ','  shift, and go to state 56
+    '}'  shift, and go to state 57
+
+
+state 41
+
+   23 class_list: field .
+
+    $default  reduce using rule 23 (class_list)
+
+
+state 42
+
+   24 class_list: method .
+
+    $default  reduce using rule 24 (class_list)
+
+
+state 43
+
+   58 print_statement: PRINT '(' . expression ')' ';'
+
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 61
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 64
+    expression             go to state 65
+    class_element          go to state 66
+
+
+state 44
+
+   59 if_else_st: IF '(' . logic_expression ')' '{' code_block_no_definitions '}' ELSE '{' code_block_no_definitions '}'
+   60 if_st: IF '(' . logic_expression ')' '{' code_block_no_definitions '}'
+
+    NOT           shift, and go to state 67
+    TRU           shift, and go to state 68
+    FLS           shift, and go to state 69
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 70
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 71
+    comparison_expression  go to state 72
+    logic_atom             go to state 73
+    logic_not              go to state 74
+    logic_and              go to state 75
+    logic_expression       go to state 76
+    class_element          go to state 66
+
+
+state 45
+
+   64 while_loop: WHILE '(' . logic_expression ')' '{' code_block_no_definitions '}'
+
+    NOT           shift, and go to state 67
+    TRU           shift, and go to state 68
+    FLS           shift, and go to state 69
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 70
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 71
+    comparison_expression  go to state 72
+    logic_atom             go to state 73
+    logic_not              go to state 74
+    logic_and              go to state 75
+    logic_expression       go to state 77
+    class_element          go to state 66
+
+
+state 46
+
+   61 call: ID '(' . call_params ')'
+
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 61
+
+    $default  reduce using rule 109 (call_params)
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 64
+    expression             go to state 78
+    call_params            go to state 79
+    class_element          go to state 66
+
+
+state 47
+
+   65 assign_statement: class_element ASSIGN . expression_or_logic ';'
+
+    NOT           shift, and go to state 67
+    TRU           shift, and go to state 68
+    FLS           shift, and go to state 69
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 70
+
+    call                   go to state 62
+    expression_or_logic    go to state 80
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 81
+    comparison_expression  go to state 72
+    expression             go to state 82
+    logic_atom             go to state 73
+    logic_not              go to state 74
+    logic_and              go to state 75
+    logic_expression       go to state 83
+    class_element          go to state 66
+
+
+state 48
+
+   62 call: class_element '.' . ID '(' call_params ')'
+  113 class_element: class_element '.' . ID
+
+    ID  shift, and go to state 84
+
+
+state 49
+
+    8 list_var: ID . @1 ',' list_var
+    9         | ID .
+
+    ';'       reduce using rule 9 (list_var)
+    $default  reduce using rule 7 (@1)
+
+    @1  go to state 20
+
+
+state 50
+
+    8 list_var: ID @1 ',' list_var .
+
+    $default  reduce using rule 8 (list_var)
+
+
+state 51
+
+   20 param: type_or_class . ID
+
+    ID  shift, and go to state 85
+
+
+state 52
+
+   14 func: type_or_class ID @2 '(' opt_param_list . ')' '{' func_body '}'
+
+    ')'  shift, and go to state 86
+
+
+state 53
+
+   17 opt_param_list: param_list .
+   19 param_list: param_list . ',' param
+
+    ','  shift, and go to state 87
+
+    $default  reduce using rule 17 (opt_param_list)
+
+
+state 54
+
+   18 param_list: param .
+
+    $default  reduce using rule 18 (param_list)
+
+
+state 55
+
+   27 field: type_or_class ID .
+   29 method: type_or_class ID . @4 '(' opt_param_list ')' '{' method_body '}'
+
+    '('       reduce using rule 28 (@4)
+    $default  reduce using rule 27 (field)
+
+    @4  go to state 88
+
+
+state 56
+
+   25 class_list: class_list ',' . field
+   26           | class_list ',' . method
+
+    ID    shift, and go to state 6
+    TYPE  shift, and go to state 7
+
+    type_or_class  go to state 39
+    field          go to state 89
+    method         go to state 90
+
+
+state 57
+
+   22 class: CLASS_MK ID @3 '{' class_list '}' . ';'
+
+    ';'  shift, and go to state 91
+
+
+state 58
+
+   80 primary_expression: INT_CONST .
+
+    $default  reduce using rule 80 (primary_expression)
+
+
+state 59
+
+   81 primary_expression: FLOAT_CONST .
+
+    $default  reduce using rule 81 (primary_expression)
+
+
+state 60
+
+   82 primary_expression: STRING_CONST .
+
+    $default  reduce using rule 82 (primary_expression)
+
+
+state 61
+
+   84 arithmetic_expression: '(' . arithmetic_expression ')'
+
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 61
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 92
+    class_element          go to state 66
+
+
+state 62
+
+   79 primary_expression: call .
+
+    $default  reduce using rule 79 (primary_expression)
+
+
+state 63
+
+   83 arithmetic_expression: primary_expression .
+
+    $default  reduce using rule 83 (arithmetic_expression)
+
+
+state 64
+
+   85 arithmetic_expression: arithmetic_expression . '+' arithmetic_expression
+   86                      | arithmetic_expression . '-' arithmetic_expression
+   87                      | arithmetic_expression . '*' arithmetic_expression
+   88                      | arithmetic_expression . '/' arithmetic_expression
+   89                      | arithmetic_expression . '%' arithmetic_expression
+   98 expression: arithmetic_expression .
+
+    '+'  shift, and go to state 93
+    '-'  shift, and go to state 94
+    '*'  shift, and go to state 95
+    '/'  shift, and go to state 96
+    '%'  shift, and go to state 97
+
+    $default  reduce using rule 98 (expression)
+
+
+state 65
+
+   58 print_statement: PRINT '(' expression . ')' ';'
+
+    ')'  shift, and go to state 98
+
+
+state 66
+
+   62 call: class_element . '.' ID '(' call_params ')'
+   78 primary_expression: class_element .
+  113 class_element: class_element . '.' ID
+
+    '.'  shift, and go to state 48
+
+    $default  reduce using rule 78 (primary_expression)
+
+
+state 67
+
+  103 logic_not: NOT . logic_not
+
+    NOT           shift, and go to state 67
+    TRU           shift, and go to state 68
+    FLS           shift, and go to state 69
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 70
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 71
+    comparison_expression  go to state 72
+    logic_atom             go to state 73
+    logic_not              go to state 99
+    class_element          go to state 66
+
+
+state 68
+
+  101 logic_atom: TRU .
+
+    $default  reduce using rule 101 (logic_atom)
+
+
+state 69
+
+  102 logic_atom: FLS .
+
+    $default  reduce using rule 102 (logic_atom)
+
+
+state 70
+
+   84 arithmetic_expression: '(' . arithmetic_expression ')'
+  100 logic_atom: '(' . logic_expression ')'
+
+    NOT           shift, and go to state 67
+    TRU           shift, and go to state 68
+    FLS           shift, and go to state 69
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 70
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 100
+    comparison_expression  go to state 72
+    logic_atom             go to state 73
+    logic_not              go to state 74
+    logic_and              go to state 75
+    logic_expression       go to state 101
+    class_element          go to state 66
+
+
+state 71
+
+   85 arithmetic_expression: arithmetic_expression . '+' arithmetic_expression
+   86                      | arithmetic_expression . '-' arithmetic_expression
+   87                      | arithmetic_expression . '*' arithmetic_expression
+   88                      | arithmetic_expression . '/' arithmetic_expression
+   89                      | arithmetic_expression . '%' arithmetic_expression
+   90 comparison_expression: arithmetic_expression .
+   91                      | arithmetic_expression . expression_comparisom arithmetic_expression
+
+    EQ   shift, and go to state 102
+    NEQ  shift, and go to state 103
+    LE   shift, and go to state 104
+    GE   shift, and go to state 105
+    LT   shift, and go to state 106
+    GT   shift, and go to state 107
+    '+'  shift, and go to state 93
+    '-'  shift, and go to state 94
+    '*'  shift, and go to state 95
+    '/'  shift, and go to state 96
+    '%'  shift, and go to state 97
+
+    $default  reduce using rule 90 (comparison_expression)
+
+    expression_comparisom  go to state 108
+
+
+state 72
+
+   99 logic_atom: comparison_expression .
+
+    $default  reduce using rule 99 (logic_atom)
+
+
+state 73
+
+  104 logic_not: logic_atom .
+
+    $default  reduce using rule 104 (logic_not)
+
+
+state 74
+
+  106 logic_and: logic_not .
+
+    $default  reduce using rule 106 (logic_and)
+
+
+state 75
+
+  105 logic_and: logic_and . AND logic_not
+  108 logic_expression: logic_and .
+
+    AND  shift, and go to state 109
+
+    $default  reduce using rule 108 (logic_expression)
+
+
+state 76
+
+   59 if_else_st: IF '(' logic_expression . ')' '{' code_block_no_definitions '}' ELSE '{' code_block_no_definitions '}'
+   60 if_st: IF '(' logic_expression . ')' '{' code_block_no_definitions '}'
+  107 logic_expression: logic_expression . OR logic_and
+
+    OR   shift, and go to state 110
+    ')'  shift, and go to state 111
+
+
+state 77
+
+   64 while_loop: WHILE '(' logic_expression . ')' '{' code_block_no_definitions '}'
+  107 logic_expression: logic_expression . OR logic_and
+
+    OR   shift, and go to state 110
+    ')'  shift, and go to state 112
+
+
+state 78
+
+  110 call_params: expression . ',' call_params
+  111            | expression .
+
+    ','  shift, and go to state 113
+
+    $default  reduce using rule 111 (call_params)
+
+
+state 79
+
+   61 call: ID '(' call_params . ')'
+
+    ')'  shift, and go to state 114
+
+
+state 80
+
+   65 assign_statement: class_element ASSIGN expression_or_logic . ';'
+
+    ';'  shift, and go to state 115
+
+
+state 81
+
+   85 arithmetic_expression: arithmetic_expression . '+' arithmetic_expression
+   86                      | arithmetic_expression . '-' arithmetic_expression
+   87                      | arithmetic_expression . '*' arithmetic_expression
+   88                      | arithmetic_expression . '/' arithmetic_expression
+   89                      | arithmetic_expression . '%' arithmetic_expression
+   90 comparison_expression: arithmetic_expression .
+   91                      | arithmetic_expression . expression_comparisom arithmetic_expression
+   98 expression: arithmetic_expression .
+
+    EQ   shift, and go to state 102
+    NEQ  shift, and go to state 103
+    LE   shift, and go to state 104
+    GE   shift, and go to state 105
+    LT   shift, and go to state 106
+    GT   shift, and go to state 107
+    '+'  shift, and go to state 93
+    '-'  shift, and go to state 94
+    '*'  shift, and go to state 95
+    '/'  shift, and go to state 96
+    '%'  shift, and go to state 97
+
+    ';'       reduce using rule 90 (comparison_expression)
+    ';'       [reduce using rule 98 (expression)]
+    $default  reduce using rule 90 (comparison_expression)
+
+    expression_comparisom  go to state 108
+
+
+state 82
+
+   66 expression_or_logic: expression .
+
+    $default  reduce using rule 66 (expression_or_logic)
+
+
+state 83
+
+   67 expression_or_logic: logic_expression .
+  107 logic_expression: logic_expression . OR logic_and
+
+    OR  shift, and go to state 110
+
+    $default  reduce using rule 67 (expression_or_logic)
+
+
+state 84
+
+   62 call: class_element '.' ID . '(' call_params ')'
+  113 class_element: class_element '.' ID .
+
+    '('  shift, and go to state 116
+
+    $default  reduce using rule 113 (class_element)
+
+
+state 85
+
+   20 param: type_or_class ID .
+
+    $default  reduce using rule 20 (param)
+
+
+state 86
+
+   14 func: type_or_class ID @2 '(' opt_param_list ')' . '{' func_body '}'
+
+    '{'  shift, and go to state 117
+
+
+state 87
+
+   19 param_list: param_list ',' . param
+
+    ID    shift, and go to state 6
+    TYPE  shift, and go to state 7
+
+    type_or_class  go to state 51
+    param          go to state 118
+
+
+state 88
+
+   29 method: type_or_class ID @4 . '(' opt_param_list ')' '{' method_body '}'
+
+    '('  shift, and go to state 119
+
+
+state 89
+
+   25 class_list: class_list ',' field .
+
+    $default  reduce using rule 25 (class_list)
+
+
+state 90
+
+   26 class_list: class_list ',' method .
+
+    $default  reduce using rule 26 (class_list)
+
+
+state 91
+
+   22 class: CLASS_MK ID @3 '{' class_list '}' ';' .
+
+    $default  reduce using rule 22 (class)
+
+
+state 92
+
+   84 arithmetic_expression: '(' arithmetic_expression . ')'
+   85                      | arithmetic_expression . '+' arithmetic_expression
+   86                      | arithmetic_expression . '-' arithmetic_expression
+   87                      | arithmetic_expression . '*' arithmetic_expression
+   88                      | arithmetic_expression . '/' arithmetic_expression
+   89                      | arithmetic_expression . '%' arithmetic_expression
+
+    '+'  shift, and go to state 93
+    '-'  shift, and go to state 94
+    '*'  shift, and go to state 95
+    '/'  shift, and go to state 96
+    '%'  shift, and go to state 97
+    ')'  shift, and go to state 120
+
+
+state 93
+
+   85 arithmetic_expression: arithmetic_expression '+' . arithmetic_expression
+
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 61
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 121
+    class_element          go to state 66
+
+
+state 94
+
+   86 arithmetic_expression: arithmetic_expression '-' . arithmetic_expression
+
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 61
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 122
+    class_element          go to state 66
+
+
+state 95
+
+   87 arithmetic_expression: arithmetic_expression '*' . arithmetic_expression
+
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 61
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 123
+    class_element          go to state 66
+
+
+state 96
+
+   88 arithmetic_expression: arithmetic_expression '/' . arithmetic_expression
+
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 61
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 124
+    class_element          go to state 66
+
+
+state 97
+
+   89 arithmetic_expression: arithmetic_expression '%' . arithmetic_expression
+
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 61
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 125
+    class_element          go to state 66
+
+
+state 98
+
+   58 print_statement: PRINT '(' expression ')' . ';'
+
+    ';'  shift, and go to state 126
+
+
+state 99
+
+  103 logic_not: NOT logic_not .
+
+    $default  reduce using rule 103 (logic_not)
+
+
+state 100
+
+   84 arithmetic_expression: '(' arithmetic_expression . ')'
+   85                      | arithmetic_expression . '+' arithmetic_expression
+   86                      | arithmetic_expression . '-' arithmetic_expression
+   87                      | arithmetic_expression . '*' arithmetic_expression
+   88                      | arithmetic_expression . '/' arithmetic_expression
+   89                      | arithmetic_expression . '%' arithmetic_expression
+   90 comparison_expression: arithmetic_expression .
+   91                      | arithmetic_expression . expression_comparisom arithmetic_expression
+
+    EQ   shift, and go to state 102
+    NEQ  shift, and go to state 103
+    LE   shift, and go to state 104
+    GE   shift, and go to state 105
+    LT   shift, and go to state 106
+    GT   shift, and go to state 107
+    '+'  shift, and go to state 93
+    '-'  shift, and go to state 94
+    '*'  shift, and go to state 95
+    '/'  shift, and go to state 96
+    '%'  shift, and go to state 97
+    ')'  shift, and go to state 120
+
+    ')'       [reduce using rule 90 (comparison_expression)]
+    $default  reduce using rule 90 (comparison_expression)
+
+    expression_comparisom  go to state 108
+
+
+state 101
+
+  100 logic_atom: '(' logic_expression . ')'
+  107 logic_expression: logic_expression . OR logic_and
+
+    OR   shift, and go to state 110
+    ')'  shift, and go to state 127
+
+
+state 102
+
+   93 expression_comparisom: EQ .
+
+    $default  reduce using rule 93 (expression_comparisom)
+
+
+state 103
+
+   94 expression_comparisom: NEQ .
+
+    $default  reduce using rule 94 (expression_comparisom)
+
+
+state 104
+
+   96 expression_comparisom: LE .
+
+    $default  reduce using rule 96 (expression_comparisom)
+
+
+state 105
+
+   97 expression_comparisom: GE .
+
+    $default  reduce using rule 97 (expression_comparisom)
+
+
+state 106
+
+   92 expression_comparisom: LT .
+
+    $default  reduce using rule 92 (expression_comparisom)
+
+
+state 107
+
+   95 expression_comparisom: GT .
+
+    $default  reduce using rule 95 (expression_comparisom)
+
+
+state 108
+
+   91 comparison_expression: arithmetic_expression expression_comparisom . arithmetic_expression
+
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 61
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 128
+    class_element          go to state 66
+
+
+state 109
+
+  105 logic_and: logic_and AND . logic_not
+
+    NOT           shift, and go to state 67
+    TRU           shift, and go to state 68
+    FLS           shift, and go to state 69
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 70
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 71
+    comparison_expression  go to state 72
+    logic_atom             go to state 73
+    logic_not              go to state 129
+    class_element          go to state 66
+
+
+state 110
+
+  107 logic_expression: logic_expression OR . logic_and
+
+    NOT           shift, and go to state 67
+    TRU           shift, and go to state 68
+    FLS           shift, and go to state 69
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 70
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 71
+    comparison_expression  go to state 72
+    logic_atom             go to state 73
+    logic_not              go to state 74
+    logic_and              go to state 130
+    class_element          go to state 66
+
+
+state 111
+
+   59 if_else_st: IF '(' logic_expression ')' . '{' code_block_no_definitions '}' ELSE '{' code_block_no_definitions '}'
+   60 if_st: IF '(' logic_expression ')' . '{' code_block_no_definitions '}'
+
+    '{'  shift, and go to state 131
+
+
+state 112
+
+   64 while_loop: WHILE '(' logic_expression ')' . '{' code_block_no_definitions '}'
+
+    '{'  shift, and go to state 132
+
+
+state 113
+
+  110 call_params: expression ',' . call_params
+
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 61
+
+    $default  reduce using rule 109 (call_params)
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 64
+    expression             go to state 78
+    call_params            go to state 133
+    class_element          go to state 66
+
+
+state 114
+
+   61 call: ID '(' call_params ')' .
+
+    $default  reduce using rule 61 (call)
+
+
+state 115
+
+   65 assign_statement: class_element ASSIGN expression_or_logic ';' .
+
+    $default  reduce using rule 65 (assign_statement)
+
+
+state 116
+
+   62 call: class_element '.' ID '(' . call_params ')'
+
+    INT_CONST     shift, and go to state 58
+    FLOAT_CONST   shift, and go to state 59
+    STRING_CONST  shift, and go to state 60
+    ID            shift, and go to state 27
+    '('           shift, and go to state 61
+
+    $default  reduce using rule 109 (call_params)
+
+    call                   go to state 62
+    primary_expression     go to state 63
+    arithmetic_expression  go to state 64
+    expression             go to state 78
+    call_params            go to state 134
+    class_element          go to state 66
+
+
+state 117
+
+   14 func: type_or_class ID @2 '(' opt_param_list ')' '{' . func_body '}'
+
+    $default  reduce using rule 49 (code_block)
+
+    func_body   go to state 135
+    code_block  go to state 136
+
+
+state 118
+
+   19 param_list: param_list ',' param .
+
+    $default  reduce using rule 19 (param_list)
+
+
+state 119
+
+   29 method: type_or_class ID @4 '(' . opt_param_list ')' '{' method_body '}'
+
+    ID    shift, and go to state 6
+    TYPE  shift, and go to state 7
+
+    $default  reduce using rule 16 (opt_param_list)
+
+    type_or_class   go to state 51
+    opt_param_list  go to state 137
+    param_list      go to state 53
+    param           go to state 54
+
+
+state 120
+
+   84 arithmetic_expression: '(' arithmetic_expression ')' .
+
+    $default  reduce using rule 84 (arithmetic_expression)
+
+
+state 121
+
+   85 arithmetic_expression: arithmetic_expression . '+' arithmetic_expression
+   85                      | arithmetic_expression '+' arithmetic_expression .
+   86                      | arithmetic_expression . '-' arithmetic_expression
+   87                      | arithmetic_expression . '*' arithmetic_expression
+   88                      | arithmetic_expression . '/' arithmetic_expression
+   89                      | arithmetic_expression . '%' arithmetic_expression
+
+    '*'  shift, and go to state 95
+    '/'  shift, and go to state 96
+    '%'  shift, and go to state 97
+
+    $default  reduce using rule 85 (arithmetic_expression)
+
+
+state 122
+
+   85 arithmetic_expression: arithmetic_expression . '+' arithmetic_expression
+   86                      | arithmetic_expression . '-' arithmetic_expression
+   86                      | arithmetic_expression '-' arithmetic_expression .
+   87                      | arithmetic_expression . '*' arithmetic_expression
+   88                      | arithmetic_expression . '/' arithmetic_expression
+   89                      | arithmetic_expression . '%' arithmetic_expression
+
+    '*'  shift, and go to state 95
+    '/'  shift, and go to state 96
+    '%'  shift, and go to state 97
+
+    $default  reduce using rule 86 (arithmetic_expression)
+
+
+state 123
+
+   85 arithmetic_expression: arithmetic_expression . '+' arithmetic_expression
+   86                      | arithmetic_expression . '-' arithmetic_expression
+   87                      | arithmetic_expression . '*' arithmetic_expression
+   87                      | arithmetic_expression '*' arithmetic_expression .
+   88                      | arithmetic_expression . '/' arithmetic_expression
+   89                      | arithmetic_expression . '%' arithmetic_expression
+
+    $default  reduce using rule 87 (arithmetic_expression)
+
+
+state 124
+
+   85 arithmetic_expression: arithmetic_expression . '+' arithmetic_expression
+   86                      | arithmetic_expression . '-' arithmetic_expression
+   87                      | arithmetic_expression . '*' arithmetic_expression
+   88                      | arithmetic_expression . '/' arithmetic_expression
+   88                      | arithmetic_expression '/' arithmetic_expression .
+   89                      | arithmetic_expression . '%' arithmetic_expression
+
+    $default  reduce using rule 88 (arithmetic_expression)
+
+
+state 125
+
+   85 arithmetic_expression: arithmetic_expression . '+' arithmetic_expression
+   86                      | arithmetic_expression . '-' arithmetic_expression
+   87                      | arithmetic_expression . '*' arithmetic_expression
+   88                      | arithmetic_expression . '/' arithmetic_expression
+   89                      | arithmetic_expression . '%' arithmetic_expression
+   89                      | arithmetic_expression '%' arithmetic_expression .
+
+    $default  reduce using rule 89 (arithmetic_expression)
+
+
+state 126
+
+   58 print_statement: PRINT '(' expression ')' ';' .
+
+    $default  reduce using rule 58 (print_statement)
+
+
+state 127
+
+  100 logic_atom: '(' logic_expression ')' .
+
+    $default  reduce using rule 100 (logic_atom)
+
+
+state 128
+
+   85 arithmetic_expression: arithmetic_expression . '+' arithmetic_expression
+   86                      | arithmetic_expression . '-' arithmetic_expression
+   87                      | arithmetic_expression . '*' arithmetic_expression
+   88                      | arithmetic_expression . '/' arithmetic_expression
+   89                      | arithmetic_expression . '%' arithmetic_expression
+   91 comparison_expression: arithmetic_expression expression_comparisom arithmetic_expression .
+
+    '+'  shift, and go to state 93
+    '-'  shift, and go to state 94
+    '*'  shift, and go to state 95
+    '/'  shift, and go to state 96
+    '%'  shift, and go to state 97
+
+    $default  reduce using rule 91 (comparison_expression)
+
+
+state 129
+
+  105 logic_and: logic_and AND logic_not .
+
+    $default  reduce using rule 105 (logic_and)
+
+
+state 130
+
+  105 logic_and: logic_and . AND logic_not
+  107 logic_expression: logic_expression OR logic_and .
+
+    AND  shift, and go to state 109
+
+    $default  reduce using rule 107 (logic_expression)
+
+
+state 131
+
+   59 if_else_st: IF '(' logic_expression ')' '{' . code_block_no_definitions '}' ELSE '{' code_block_no_definitions '}'
+   60 if_st: IF '(' logic_expression ')' '{' . code_block_no_definitions '}'
+
+    $default  reduce using rule 39 (code_block_no_definitions)
+
+    code_block_no_definitions  go to state 138
+
+
+state 132
+
+   64 while_loop: WHILE '(' logic_expression ')' '{' . code_block_no_definitions '}'
+
+    $default  reduce using rule 39 (code_block_no_definitions)
+
+    code_block_no_definitions  go to state 139
+
+
+state 133
+
+  110 call_params: expression ',' call_params .
+
+    $default  reduce using rule 110 (call_params)
+
+
+state 134
+
+   62 call: class_element '.' ID '(' call_params . ')'
+
+    ')'  shift, and go to state 140
+
+
+state 135
+
+   14 func: type_or_class ID @2 '(' opt_param_list ')' '{' func_body . '}'
+
+    '}'  shift, and go to state 141
+
+
+state 136
+
+   15 func_body: code_block .
+   50 code_block: code_block . if_else_st
+   51           | code_block . if_st
+   52           | code_block . call_statement
+   53           | code_block . while_loop
+   54           | code_block . assign_statement
+   55           | code_block . var_definition
+   56           | code_block . print_statement
+   57           | code_block . return_statement
+
+    PRINT   shift, and go to state 24
+    RETURN  shift, and go to state 142
+    IF      shift, and go to state 25
+    WHILE   shift, and go to state 26
+    ID      shift, and go to state 143
+    TYPE    shift, and go to state 7
+
+    $default  reduce using rule 15 (func_body)
+
+    type_or_class     go to state 144
+    var               go to state 145
+    return_statement  go to state 146
+    print_statement   go to state 147
+    if_else_st        go to state 148
+    if_st             go to state 149
+    call              go to state 32
+    call_statement    go to state 150
+    while_loop        go to state 151
+    assign_statement  go to state 152
+    return_val        go to state 153
+    return_nothing    go to state 154
+    var_definition    go to state 155
+    class_element     go to state 36
+
+
+state 137
+
+   29 method: type_or_class ID @4 '(' opt_param_list . ')' '{' method_body '}'
+
+    ')'  shift, and go to state 156
+
+
+state 138
+
+   40 code_block_no_definitions: code_block_no_definitions . if_else_st
+   41                          | code_block_no_definitions . if_st
+   42                          | code_block_no_definitions . call_statement
+   43                          | code_block_no_definitions . while_loop
+   44                          | code_block_no_definitions . assign_statement
+   45                          | code_block_no_definitions . print_statement
+   46                          | code_block_no_definitions . return_statement
+   59 if_else_st: IF '(' logic_expression ')' '{' code_block_no_definitions . '}' ELSE '{' code_block_no_definitions '}'
+   60 if_st: IF '(' logic_expression ')' '{' code_block_no_definitions . '}'
+
+    PRINT   shift, and go to state 24
+    RETURN  shift, and go to state 142
+    IF      shift, and go to state 25
+    WHILE   shift, and go to state 26
+    ID      shift, and go to state 27
+    '}'     shift, and go to state 157
+
+    return_statement  go to state 158
+    print_statement   go to state 159
+    if_else_st        go to state 160
+    if_st             go to state 161
+    call              go to state 32
+    call_statement    go to state 162
+    while_loop        go to state 163
+    assign_statement  go to state 164
+    return_val        go to state 153
+    return_nothing    go to state 154
+    class_element     go to state 36
+
+
+state 139
+
+   40 code_block_no_definitions: code_block_no_definitions . if_else_st
+   41                          | code_block_no_definitions . if_st
+   42                          | code_block_no_definitions . call_statement
+   43                          | code_block_no_definitions . while_loop
+   44                          | code_block_no_definitions . assign_statement
+   45                          | code_block_no_definitions . print_statement
+   46                          | code_block_no_definitions . return_statement
+   64 while_loop: WHILE '(' logic_expression ')' '{' code_block_no_definitions . '}'
+
+    PRINT   shift, and go to state 24
+    RETURN  shift, and go to state 142
+    IF      shift, and go to state 25
+    WHILE   shift, and go to state 26
+    ID      shift, and go to state 27
+    '}'     shift, and go to state 165
+
+    return_statement  go to state 158
+    print_statement   go to state 159
+    if_else_st        go to state 160
+    if_st             go to state 161
+    call              go to state 32
+    call_statement    go to state 162
+    while_loop        go to state 163
+    assign_statement  go to state 164
+    return_val        go to state 153
+    return_nothing    go to state 154
+    class_element     go to state 36
+
+
+state 140
+
+   62 call: class_element '.' ID '(' call_params ')' .
+
+    $default  reduce using rule 62 (call)
+
+
+state 141
+
+   14 func: type_or_class ID @2 '(' opt_param_list ')' '{' func_body '}' .
+
+    $default  reduce using rule 14 (func)
+
+
+state 142
+
+   68 return_val: RETURN . any_value
+   69           | RETURN . STRING_CONST
+   70 return_nothing: RETURN .
+
+    TRU           shift, and go to state 166
+    FLS           shift, and go to state 167
+    INT_CONST     shift, and go to state 168
+    FLOAT_CONST   shift, and go to state 169
+    STRING_CONST  shift, and go to state 170
+    ID            shift, and go to state 27
+
+    $default  reduce using rule 70 (return_nothing)
+
+    call           go to state 171
+    any_value      go to state 172
+    class_element  go to state 173
+
+
+state 143
+
+   11 type_or_class: ID .
+   61 call: ID . '(' call_params ')'
+  112 class_element: ID .
+
+    '('  shift, and go to state 46
+
+    ID        reduce using rule 11 (type_or_class)
+    $default  reduce using rule 112 (class_element)
+
+
+state 144
+
+   12 var: type_or_class . list_var ';'
+
+    ID  shift, and go to state 49
+
+    list_var  go to state 17
+
+
+state 145
+
+   71 var_definition: var .
+
+    $default  reduce using rule 71 (var_definition)
+
+
+state 146
+
+   57 code_block: code_block return_statement .
+
+    $default  reduce using rule 57 (code_block)
+
+
+state 147
+
+   56 code_block: code_block print_statement .
+
+    $default  reduce using rule 56 (code_block)
+
+
+state 148
+
+   50 code_block: code_block if_else_st .
+
+    $default  reduce using rule 50 (code_block)
+
+
+state 149
+
+   51 code_block: code_block if_st .
+
+    $default  reduce using rule 51 (code_block)
+
+
+state 150
+
+   52 code_block: code_block call_statement .
+
+    $default  reduce using rule 52 (code_block)
+
+
+state 151
+
+   53 code_block: code_block while_loop .
+
+    $default  reduce using rule 53 (code_block)
+
+
+state 152
+
+   54 code_block: code_block assign_statement .
+
+    $default  reduce using rule 54 (code_block)
+
+
+state 153
+
+   47 return_statement: return_val . ';'
+
+    ';'  shift, and go to state 174
+
+
+state 154
+
+   48 return_statement: return_nothing . ';'
+
+    ';'  shift, and go to state 175
+
+
+state 155
+
+   55 code_block: code_block var_definition .
+
+    $default  reduce using rule 55 (code_block)
+
+
+state 156
+
+   29 method: type_or_class ID @4 '(' opt_param_list ')' . '{' method_body '}'
+
+    '{'  shift, and go to state 176
+
+
+state 157
+
+   59 if_else_st: IF '(' logic_expression ')' '{' code_block_no_definitions '}' . ELSE '{' code_block_no_definitions '}'
+   60 if_st: IF '(' logic_expression ')' '{' code_block_no_definitions '}' .
+
+    ELSE  shift, and go to state 177
+
+    $default  reduce using rule 60 (if_st)
+
+
+state 158
+
+   46 code_block_no_definitions: code_block_no_definitions return_statement .
+
+    $default  reduce using rule 46 (code_block_no_definitions)
+
+
+state 159
+
+   45 code_block_no_definitions: code_block_no_definitions print_statement .
+
+    $default  reduce using rule 45 (code_block_no_definitions)
+
+
+state 160
+
+   40 code_block_no_definitions: code_block_no_definitions if_else_st .
+
+    $default  reduce using rule 40 (code_block_no_definitions)
+
+
+state 161
+
+   41 code_block_no_definitions: code_block_no_definitions if_st .
+
+    $default  reduce using rule 41 (code_block_no_definitions)
+
+
+state 162
+
+   42 code_block_no_definitions: code_block_no_definitions call_statement .
+
+    $default  reduce using rule 42 (code_block_no_definitions)
+
+
+state 163
+
+   43 code_block_no_definitions: code_block_no_definitions while_loop .
+
+    $default  reduce using rule 43 (code_block_no_definitions)
+
+
+state 164
+
+   44 code_block_no_definitions: code_block_no_definitions assign_statement .
+
+    $default  reduce using rule 44 (code_block_no_definitions)
+
+
+state 165
+
+   64 while_loop: WHILE '(' logic_expression ')' '{' code_block_no_definitions '}' .
+
+    $default  reduce using rule 64 (while_loop)
+
+
+state 166
+
+   74 any_value: TRU .
+
+    $default  reduce using rule 74 (any_value)
+
+
+state 167
+
+   75 any_value: FLS .
+
+    $default  reduce using rule 75 (any_value)
+
+
+state 168
+
+   76 any_value: INT_CONST .
+
+    $default  reduce using rule 76 (any_value)
+
+
+state 169
+
+   77 any_value: FLOAT_CONST .
+
+    $default  reduce using rule 77 (any_value)
+
+
+state 170
+
+   69 return_val: RETURN STRING_CONST .
+
+    $default  reduce using rule 69 (return_val)
+
+
+state 171
+
+   72 any_value: call .
+
+    $default  reduce using rule 72 (any_value)
+
+
+state 172
+
+   68 return_val: RETURN any_value .
+
+    $default  reduce using rule 68 (return_val)
+
+
+state 173
+
+   62 call: class_element . '.' ID '(' call_params ')'
+   73 any_value: class_element .
+  113 class_element: class_element . '.' ID
+
+    '.'  shift, and go to state 48
+
+    $default  reduce using rule 73 (any_value)
+
+
+state 174
+
+   47 return_statement: return_val ';' .
+
+    $default  reduce using rule 47 (return_statement)
+
+
+state 175
+
+   48 return_statement: return_nothing ';' .
+
+    $default  reduce using rule 48 (return_statement)
+
+
+state 176
+
+   29 method: type_or_class ID @4 '(' opt_param_list ')' '{' . method_body '}'
+
+    $default  reduce using rule 49 (code_block)
+
+    method_body  go to state 178
+    code_block   go to state 179
+
+
+state 177
+
+   59 if_else_st: IF '(' logic_expression ')' '{' code_block_no_definitions '}' ELSE . '{' code_block_no_definitions '}'
+
+    '{'  shift, and go to state 180
+
+
+state 178
+
+   29 method: type_or_class ID @4 '(' opt_param_list ')' '{' method_body . '}'
+
+    '}'  shift, and go to state 181
+
+
+state 179
+
+   30 method_body: code_block .
+   50 code_block: code_block . if_else_st
+   51           | code_block . if_st
+   52           | code_block . call_statement
+   53           | code_block . while_loop
+   54           | code_block . assign_statement
+   55           | code_block . var_definition
+   56           | code_block . print_statement
+   57           | code_block . return_statement
+
+    PRINT   shift, and go to state 24
+    RETURN  shift, and go to state 142
+    IF      shift, and go to state 25
+    WHILE   shift, and go to state 26
+    ID      shift, and go to state 143
+    TYPE    shift, and go to state 7
+
+    $default  reduce using rule 30 (method_body)
+
+    type_or_class     go to state 144
+    var               go to state 145
+    return_statement  go to state 146
+    print_statement   go to state 147
+    if_else_st        go to state 148
+    if_st             go to state 149
+    call              go to state 32
+    call_statement    go to state 150
+    while_loop        go to state 151
+    assign_statement  go to state 152
+    return_val        go to state 153
+    return_nothing    go to state 154
+    var_definition    go to state 155
+    class_element     go to state 36
+
+
+state 180
+
+   59 if_else_st: IF '(' logic_expression ')' '{' code_block_no_definitions '}' ELSE '{' . code_block_no_definitions '}'
+
+    $default  reduce using rule 39 (code_block_no_definitions)
+
+    code_block_no_definitions  go to state 182
+
+
+state 181
+
+   29 method: type_or_class ID @4 '(' opt_param_list ')' '{' method_body '}' .
+
+    $default  reduce using rule 29 (method)
+
+
+state 182
+
+   40 code_block_no_definitions: code_block_no_definitions . if_else_st
+   41                          | code_block_no_definitions . if_st
+   42                          | code_block_no_definitions . call_statement
+   43                          | code_block_no_definitions . while_loop
+   44                          | code_block_no_definitions . assign_statement
+   45                          | code_block_no_definitions . print_statement
+   46                          | code_block_no_definitions . return_statement
+   59 if_else_st: IF '(' logic_expression ')' '{' code_block_no_definitions '}' ELSE '{' code_block_no_definitions . '}'
+
+    PRINT   shift, and go to state 24
+    RETURN  shift, and go to state 142
+    IF      shift, and go to state 25
+    WHILE   shift, and go to state 26
+    ID      shift, and go to state 27
+    '}'     shift, and go to state 183
+
+    return_statement  go to state 158
+    print_statement   go to state 159
+    if_else_st        go to state 160
+    if_st             go to state 161
+    call              go to state 32
+    call_statement    go to state 162
+    while_loop        go to state 163
+    assign_statement  go to state 164
+    return_val        go to state 153
+    return_nothing    go to state 154
+    class_element     go to state 36
+
+
+state 183
+
+   59 if_else_st: IF '(' logic_expression ')' '{' code_block_no_definitions '}' ELSE '{' code_block_no_definitions '}' .
+
+    $default  reduce using rule 59 (if_else_st)

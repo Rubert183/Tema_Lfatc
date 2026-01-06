@@ -1,4 +1,3 @@
-
 int a1,b1;
 float c;
 int cmmdc(int a,int b){
@@ -9,7 +8,7 @@ int cmmdc(int a,int b){
         b:=r;
     }
     return a;
-};
+}
 
 class MyClass{
     int a,
@@ -20,7 +19,7 @@ class MyClass{
 };
 MyClass c1;
 main {
-    a1:=5;
+    a1:=31;
     b1:=3;
     c:=c1.rez();
     Print(cmmdc(a1,b1));

@@ -1,127 +1,1010 @@
 %{
 #include <iostream>
+#include <string>
 #include <vector>
-#include "AST.h"
+#include <map>
 #include "SymTable.h"
-
+#include "Expr.h"
+#include "Ast.h"
 using namespace std;
 
+class SymTable;
+class ASTNode;
+struct Expr;
+
+struct ProgramLists {
+    vector<ASTNode*>* definitions;
+    vector<ASTNode*>* main_instrs;
+};
+
+struct CallParams {
+    vector<string>* types;
+    vector<ASTNode*>* asts;
+};
+
+extern FILE* yyin;
+extern char* yytext;
 extern int yylineno;
 extern int yylex();
-void yyerror(const char*);
-
-SymTable* currentSym;
+void yyerror(const char * s);
+class SymTable* current;
+string currentType;
+IdInfo *currentIdInfo;
+int errorCount = 0;
 %}
 
 %union {
     int intVal;
     float floatVal;
-    char* strVal;
+    std::string* strVal;
+    std::vector<std::string>* types;
+    std::vector<ASTNode*>* ast_list;
+    int expr_comp_op;
+    Expr *expr;
     ASTNode* ast;
+    ProgramLists* program_lists;
+    CallParams* call_params;
 }
 
-%token IF ELSE WHILE
-%token PRINT
-%token TRU FLS
-%token AND OR NOT
-%token EQ NEQ LT LE GT GE
-%token ASSIGN
+%type <expr> expression
+%type <expr> logic_expression
+%type <expr> logic_and
+%type <expr> logic_not
+%type <expr> logic_atom
+%type <expr> expression_or_logic
+%type <expr> any_value_no_bool_const
+%type <expr> comparison_operand
+%type <expr> class_element
+%type <expr> call
+%type <ast> assign_statement
+%type <ast> print_statement
+%type <ast> if_st
+%type <ast> if_else_st
+%type <ast> while_loop
+%type <ast> call_statement
+%type <ast> return_statement
+%type <ast_list> main_code_block
+%type <ast_list> code_block
+%type <ast_list> code_block_no_definitions
+%type <ast> func
+%type <ast> class
+%type <ast> method
+%type <ast_list> top_level
+%type <ast> top_level_decl
+%type <ast_list> main
+%type <program_lists> progr
+%type <call_params> call_params
+%type <ast_list> func_body
+%type <ast_list> method_body
+%type <ast_list> class_list
+%type <ast> return_val
+%type <expr> any_value
+%type <expr_comp_op> expression_comparisom
 
+%token CLASS_MK MAIN_MK PRINT RETURN
+%token ASSIGN EQ NEQ LE GE LT GT NR NOT AND OR
+%token IF WHILE ELSE TRU FLS
 %token <intVal> INT_CONST
 %token <floatVal> FLOAT_CONST
-%token <strVal> ID
+%token <strVal> STRING_CONST
+%token <strVal> ID TYPE
+%start progr
 
-%type <ast> expr logic_expr stmt stmt_list
-
-%left OR
-%left AND
-%left EQ NEQ LT LE GT GE
-%left '+' '-'
+%nonassoc '<' '>' LE GE EQ NEQ
+%left '+' '-' 
 %left '*' '/' '%'
-%right NOT
-%right UMINUS
-
-%start program
 
 %%
 
-program
-    : stmt_list {
-        for (ASTNode* s : *((vector<ASTNode*>*)$1)) {
-            if (s) s->eval(*currentSym);
+progr : top_level main {
+            if (errorCount == 0) {
+                cout << "The program is correct!" << endl;
+                SymTable* global_scope = current;
+                std::vector<ASTNode*>* definitions = $1;
+                std::vector<ASTNode*>* main_instrs = $2;
+                
+                if (main_instrs) {
+                    for (ASTNode* instr : *main_instrs) {
+                        if (instr) {
+                            try {
+                                if (definitions) {
+                                    instr->setDefinitionsList(definitions);
+                                }
+                                
+                                instr->eval(*global_scope);
+                            } catch (const std::exception& e) {
+                                cout << "Runtime error: " << e.what() << endl;
+                            }
+                        }
+                    }
+                }
+            }
+            $$ = new ProgramLists();
+            $$->definitions = $1;
+            $$->main_instrs = $2;
         }
-      }
+      ;
+
+top_level : {
+            $$ = new vector<ASTNode*>();
+        }
+          | top_level top_level_decl {
+            if ($2) {
+                $1->push_back($2);
+            }
+            $$ = $1;
+        }
+          ;
+
+top_level_decl : class {
+            $$ = $1;
+        }
+               | func {
+            $$ = $1;
+        }
+               | var {
+            $$ = nullptr;
+        }
+               ;
+
+list_var : ID {
+             if(current->existsClass(*$1)){
+                 cout << "Variable " << *$1 << " has the name of a class at line " << yylineno << endl;
+                 errorCount++;
+             } else if(current->existsFunction(*$1)){
+                    cout << "Variable " << *$1 << " has the name of a function at line " << yylineno << endl;
+                    errorCount++;
+             } else if(current->existsVar_current(*$1)){
+                    cout << "Redeclared variable " << *$1 << " at line " << yylineno << endl;
+                    errorCount++;
+             } else {
+                    current->addVar(currentType, *$1);
+             }
+         } ',' list_var
+         | ID {
+             if(current->existsClass(*$1)){
+                 cout << "Variable " << *$1 << " has the name of a class at line " << yylineno << endl;
+                 errorCount++;
+             } else if(current->existsFunction(*$1)){
+                    cout << "Variable " << *$1 << " has the name of a function at line " << yylineno << endl;
+                    errorCount++;
+             } else if(current->existsVar_current(*$1)){
+                    cout << "Redeclared variable " << *$1 << " at line " << yylineno << endl;
+                    errorCount++;
+             } else {
+                    current->addVar(currentType, *$1);
+             }
+         }
+         ;
+
+type_or_class : TYPE {currentType=*$1;}
+              | ID {
+                if(!current->existsClass(*$1)){
+                 cout << "Undeclared class " << *$1 << " at line " << yylineno << endl;
+                 errorCount++;
+                }
+                currentType=*$1;
+              }
+              ;
+
+var : type_or_class list_var ';'
     ;
 
-stmt_list
-    : stmt {
-        $$ = new vector<ASTNode*>();
-        ((vector<ASTNode*>*)$$)->push_back($1);
-      }
-    | stmt_list stmt {
-        ((vector<ASTNode*>*)$1)->push_back($2);
-        $$ = $1;
-      }
+func: type_or_class ID {
+             if(current->existsClass(*$2)){
+                 cout << "Function " << *$2 << " has the name of a class at line " << yylineno << endl;
+                 errorCount++;
+             } else if(current->existsVar_current(*$2)){
+                    cout << "Function " << *$2 << " has the name of a variable at line " << yylineno << endl;
+                    errorCount++;
+             } else if(current->existsFunction(*$2)){
+                        cout << "Redeclared function " << *$2 << " at line " << yylineno << endl;
+                        errorCount++;
+             } else {
+                        current->addFunction(currentType, *$2);
+                        SymTable* funcScope = new SymTable(*$2, current);
+                        currentIdInfo=current->getFunction(*$2);
+                        currentIdInfo->function_scope = funcScope;
+                        current = current->getFunctionScope(*$2);
+             }
+         } '(' opt_param_list ')' '{' func_body '}' {
+            string func_name = *$2;
+            SymTable* func_scope = current->getFunctionScope(func_name);
+            current=current->getParent();
+            if (errorCount == 0 && $8) {
+                $$ = new ASTFunctionDef(func_name, *$8, func_scope);
+            } else {
+                $$ = nullptr;
+            }
+         }
     ;
 
-stmt
-    : ID ASSIGN expr ';' {
-        $$ = new ASTAssign(new ASTId($1), $3);
-      }
-    | PRINT '(' expr ')' ';' {
-        $$ = new ASTPrint($3);
-      }
-    | IF '(' logic_expr ')' stmt {
-        $$ = new ASTNull();
-      }
-    | IF '(' logic_expr ')' stmt ELSE stmt {
-        $$ = new ASTNull();
-      }
-    | WHILE '(' logic_expr ')' stmt {
-        $$ = new ASTNull();
-      }
-    | '{' stmt_list '}' {
-        $$ = new ASTNull();
-      }
+func_body : code_block { $$ = $1; }
+          ;
+
+opt_param_list : 
+               | param_list 
+               ;
+
+param_list : param
+           | param_list ','  param 
+           ;
+
+param : type_or_class ID {
+             if(current->existsClass(*$2)){
+                 cout << "Parameter " << *$2 << " has the name of a class at line " << yylineno << endl;
+                 errorCount++;
+             } else if(current->existsFunction_current(*$2)){
+                    cout << "Parameter " << *$2 << " has the name of a function at line " << yylineno << endl;
+                    errorCount++;
+             } else if(current->existsVar_current(*$2)){
+                    cout << "Redeclared Parameter " << *$2 << " at line " << yylineno << endl;
+                    errorCount++;
+             } else {
+                        currentIdInfo->add_param(currentType,*$2);
+                        current->addVar(currentType, *$2);
+             }
+         }
+      ; 
+
+class : CLASS_MK ID {
+        string className = *$2;
+        if(current->existsVar(className)){
+            cout << "Class " << className << " has the name of a variable at line " << yylineno << endl;
+            errorCount++;
+        } else if(current->existsFunction(className)){
+            cout << "Class " << className << " has the name of a function at line " << yylineno << endl;
+            errorCount++;
+        } else if(current->existsClass(className)){
+            cout << "Redeclared class " << className << " at line " << yylineno << endl;
+            errorCount++;
+        } else {
+            current->addClass(className);
+            SymTable* classScope = new SymTable(className, current);
+            current->getClass(className)->class_scope = classScope;
+            current = classScope;
+        }
+      } '{' class_list '}' ';' {
+            string className = *$2;
+            SymTable* class_scope = current->getClassScope(className);
+            current=current->getParent();
+            if (errorCount == 0 && class_scope) {
+                ASTClassDef* class_def = new ASTClassDef(className, class_scope);
+                if ($5) {
+                    for (ASTNode* method_node : *$5) {
+                        ASTFunctionDef* method_def = dynamic_cast<ASTFunctionDef*>(method_node);
+                        if (method_def) {
+                            class_def->addMethod(method_def->getName(), method_def);
+                        }
+                    }
+                }
+                $$ = class_def;
+            } else {
+                $$ = nullptr;
+            }
+        }
+      ;
+
+class_list : field {
+            $$ = new vector<ASTNode*>();
+        }
+           | method {
+            $$ = new vector<ASTNode*>();
+            if ($1) {
+                $$->push_back($1);
+            }
+        }
+           | class_list ',' field {
+            $$ = $1;
+        }
+           | class_list ',' method {
+            if ($3) {
+                $1->push_back($3);
+            }
+            $$ = $1;
+        }
+           ;
+
+field : type_or_class ID {
+        string fieldName = *$2;
+        if(current->existsClass(fieldName)){
+            cout << "Field " << fieldName << " has the name of a class at line " << yylineno << endl;
+            errorCount++;
+        } else if(current->existsFunction_current(fieldName)){
+            cout << "Field " << fieldName << " has the name of a function at line " << yylineno << endl;
+            errorCount++;
+        } else if(current->existsVar_current(fieldName)){
+            cout << "Redeclared field " << fieldName << " at line " << yylineno << endl;
+            errorCount++;
+        } else {
+            current->addVar(currentType, fieldName); 
+        }
+    }   
+      ;
+
+method : type_or_class ID {
+    string methodName = *$2;
+    if(current->existsClass(methodName)){
+        cout << "Method " << methodName << " has the name of a class at line " << yylineno << endl;
+        errorCount++;
+    } else if(current->existsVar_current(methodName)){
+        cout << "Method " << methodName << " has the name of a variable at line " << yylineno << endl;
+        errorCount++;
+    } else if(current->existsFunction_current(methodName)){
+        cout << "Redeclared method " << methodName << " at line " << yylineno << endl;
+        errorCount++;
+    } else {
+        current->addFunction(currentType, methodName);
+        SymTable* methodScope = new SymTable(methodName, current);
+        currentIdInfo = current->getFunction(methodName);
+        currentIdInfo->function_scope = methodScope;
+        current = methodScope;
+    }
+    } '(' opt_param_list ')' '{' method_body '}' {
+        string methodName = *$2;
+        SymTable* method_scope = current->getFunctionScope(methodName);
+        current = current->getParent();
+        if (errorCount == 0 && method_scope && $8) {
+            $$ = new ASTFunctionDef(methodName, *$8, method_scope);
+        } else {
+            $$ = nullptr;
+        }
+    }
+       ;
+
+method_body : code_block { $$ = $1; }
+           ;
+
+main : MAIN_MK '{' main_code_block '}' {
+            $$ = $3;
+        }
+     ;
+
+main_code_block : {
+            $$ = new vector<ASTNode*>();
+        }
+                | main_code_block if_else_st {
+            $1->push_back($2);
+            $$ = $1;
+        }
+                | main_code_block if_st {
+            $1->push_back($2);
+            $$ = $1;
+        }
+                | main_code_block call_statement {
+            $1->push_back($2);
+            $$ = $1;
+        }
+                | main_code_block while_loop {
+            $1->push_back($2);
+            $$ = $1;
+        }
+                | main_code_block assign_statement {
+            $1->push_back($2);
+            $$ = $1;
+        }
+                | main_code_block print_statement {
+            $1->push_back($2);
+            $$ = $1;
+        }
+                ;
+
+code_block_no_definitions : {
+            $$ = new vector<ASTNode*>();
+        }
+                          | code_block_no_definitions if_else_st {
+            $1->push_back($2);
+            $$ = $1;
+        }
+                          | code_block_no_definitions if_st {
+            $1->push_back($2);
+            $$ = $1;
+        }
+                          | code_block_no_definitions call_statement {
+            $1->push_back($2);
+            $$ = $1;
+        }
+                          | code_block_no_definitions while_loop {
+            $1->push_back($2);
+            $$ = $1;
+        }
+                          | code_block_no_definitions assign_statement {
+            $1->push_back($2);
+            $$ = $1;
+        }
+                          | code_block_no_definitions print_statement {
+            $1->push_back($2);
+            $$ = $1;
+        }
+                          | code_block_no_definitions return_statement {
+            $1->push_back($2);
+            $$ = $1;
+        }
+                          ;
+
+return_statement : return_val ';' {
+            $$ = $1;
+        }
+                 | return_nothing ';' {
+            $$ = new ASTReturn();
+        }
+                 ;
+
+code_block : {
+            $$ = new vector<ASTNode*>();
+        }
+           | code_block if_else_st {
+            $1->push_back($2);
+            $$ = $1;
+        }
+           | code_block if_st {
+            $1->push_back($2);
+            $$ = $1;
+        }
+           | code_block call_statement {
+            $1->push_back($2);
+            $$ = $1;
+        }
+           | code_block while_loop {
+            $1->push_back($2);
+            $$ = $1;
+        }
+           | code_block assign_statement {
+            $1->push_back($2);
+            $$ = $1;
+        }
+           | code_block var_definition {
+            $$ = $1;
+        }
+           | code_block print_statement {
+            $1->push_back($2);
+            $$ = $1;
+        }
+           | code_block return_statement {
+            $1->push_back($2);
+            $$ = $1;
+        }
+           ;
+
+print_statement : PRINT '(' expression ')' ';' {
+            if ($3 && $3->ast) {
+                $$ = new ASTPrint($3->ast);
+            } else {
+                $$ = new ASTNull();
+            }
+        }
+                ;
+
+if_else_st : IF '(' logic_expression ')' '{' code_block_no_definitions '}' ELSE '{' code_block_no_definitions '}' {
+            if ($3 && $3->ast && $6 && $10) {
+                ASTNode* cond = $3->ast;
+                vector<ASTNode*> if_body = *$6;
+                vector<ASTNode*> else_body = *$10;
+                $$ = new ASTIf(cond, if_body, else_body);
+            } else {
+                $$ = new ASTNull();
+            }
+        }
+           ;
+
+if_st : IF '(' logic_expression ')' '{' code_block_no_definitions '}' {
+            if ($3 && $3->ast && $6) {
+                ASTNode* cond = $3->ast;
+                vector<ASTNode*> body = *$6;
+                $$ = new ASTIf(cond, body);
+            } else {
+                $$ = new ASTNull();
+            }
+        }
+      ;
+
+call
+    : ID '(' call_params ')' {
+    IdInfo* f = current->getFunction(*$1);
+    Expr* expr_result = nullptr;
+    if(!f){
+        cout << "Undefined function " << *$1
+             << " at line " << yylineno << endl;
+        errorCount++;
+        expr_result = makeExpr("");
+        expr_result->ast = new ASTOther();
+    } else {
+        vector<string>* types = $3->types;
+        vector<ASTNode*>* asts = $3->asts;
+        if(f->params.size() != types->size()){
+            cout << "Function " << *$1
+                 << " called with wrong number of parameters at line "
+                 << yylineno << endl;
+            errorCount++;
+            expr_result = makeExpr("");
+            expr_result->ast = new ASTOther();
+        } else {
+            for(size_t i = 0; i < types->size(); i++){
+                if(f->params[i].first!= (*types)[i]){
+                    cout << "Type mismatch for parameter "
+                         << i+1 << " in function " << *$1
+                         << " at line " << yylineno << endl;
+                    errorCount++;
+                }
+            }
+            expr_result = makeExpr(f->type);
+            if (asts) {
+                expr_result->ast = new ASTFunctionCall(*$1, *asts);
+            } else {
+                expr_result->ast = new ASTOther();
+            }
+        }
+    }
+    $$ = expr_result;
+}
+| class_element '.' ID '(' call_params ')' {
+    IdInfo* typeInfo = current->getClass(*$1->type);
+    Expr* expr_result = nullptr;
+    if(!typeInfo){
+        cout << "Type " << *$1->type
+             << " is not a class at line " << yylineno << endl;
+        errorCount++;
+        expr_result = makeExpr("");
+        expr_result->ast = new ASTOther();
+    } else {
+        SymTable* classScope = typeInfo->class_scope;
+        IdInfo* m = classScope->getFunction(*$3);
+        if(!m){
+            cout << "Undefined method " << *$3
+                 << " at line " << yylineno << endl;
+            errorCount++;
+            expr_result = makeExpr("");
+            expr_result->ast = new ASTOther();
+        } else {
+            vector<string>* types = $5->types;
+            vector<ASTNode*>* asts = $5->asts;
+            if(m->params.size() != types->size()){
+                cout << "Method " << *$3
+                     << " called with wrong number of parameters at line "
+                     << yylineno << endl;
+                errorCount++;
+                expr_result = makeExpr("");
+                expr_result->ast = new ASTOther();
+            } else {
+                for(size_t i = 0; i < types->size(); i++){
+                    if(m->params[i].first != (*types)[i]){
+                        cout << "Type mismatch for parameter "
+                             << i+1 << " in method " << *$3
+                             << " at line " << yylineno << endl;
+                        errorCount++;
+                    }
+                }
+            }
+            expr_result = makeExpr(m->type);
+            if ($1->ast && asts) {
+                expr_result->ast = new ASTMethodCall($1->ast, *$3, *asts);
+            } else {
+                expr_result->ast = new ASTOther();
+            }
+        }
+    }
+    $$ = expr_result;
+}
+;
+
+call_statement : call {
+    if ($1 && $1->ast) {
+        $$ = $1->ast;
+    } else {
+        $$ = new ASTOther();
+    }
+}
+;
+
+while_loop : WHILE '(' logic_expression ')' '{' code_block_no_definitions '}' {
+            if ($3 && $3->ast && $6) {
+                ASTNode* cond = $3->ast;
+                vector<ASTNode*> body = *$6;
+                $$ = new ASTWhile(cond, body);
+            } else {
+                $$ = new ASTNull();
+            }
+        }
+           ;
+
+assign_statement : class_element ASSIGN expression_or_logic ';'
+                 {
+                    if($1 && $3 && *$3->type!=""){
+                        if (*$1->type != *$3->type) {
+                            if(*$1->type!="")
+                                cout << "Cannot assign type "<< *$3->type << " to type "<< *$1->type << " at line "<< yylineno << endl;
+                            errorCount++;
+                        }
+                    }
+                    ASTNode* right_ast = nullptr;
+                    if ($3 && $3->ast) {
+                        right_ast = $3->ast;
+                    }
+                    if ($1 && $1->ast && right_ast) {
+                        ASTId* id_node = dynamic_cast<ASTId*>($1->ast);
+                        if (id_node) {
+                            $$ = new ASTAssign(id_node, right_ast);
+                        } else {
+                            $$ = new ASTNull();
+                        }
+                    } else {
+                        $$ = new ASTNull();
+                    }
+                 }
+                 ;
+
+expression_or_logic
+    : expression {
+            $$ = $1;
+        }
+    | logic_expression {
+            $$ = $1;
+        }
     ;
 
-logic_expr
-    : expr EQ expr   { $$ = new ASTBinaryOp("==", $1, $3); }
-    | expr NEQ expr  { $$ = new ASTBinaryOp("!=", $1, $3); }
-    | expr LT expr   { $$ = new ASTBinaryOp("<",  $1, $3); }
-    | expr LE expr   { $$ = new ASTBinaryOp("<=", $1, $3); }
-    | expr GT expr   { $$ = new ASTBinaryOp(">",  $1, $3); }
-    | expr GE expr   { $$ = new ASTBinaryOp(">=", $1, $3); }
-    | logic_expr AND logic_expr { $$ = new ASTBinaryOp("&&", $1, $3); }
-    | logic_expr OR  logic_expr { $$ = new ASTBinaryOp("||", $1, $3); }
-    | NOT logic_expr { $$ = new ASTUnaryOp("not", $2); }
-    | '(' logic_expr ')' { $$ = $2; }
-    | TRU { $$ = new ASTConstant(Value::makeBool(true)); }
-    | FLS { $$ = new ASTConstant(Value::makeBool(false)); }
+return_val : RETURN any_value {
+            if ($2 && $2->ast) {
+                $$ = new ASTReturn($2->ast);
+            } else {
+                $$ = new ASTReturn();
+            }
+        }
+           | RETURN STRING_CONST {
+            ASTConstant* str_const = new ASTConstant(Value::makeString(*$2));
+            $$ = new ASTReturn(str_const);
+        }
+           ;
+
+return_nothing : RETURN
+               ;
+
+var_definition : var
+               ;
+
+any_value : call {
+            $$ = $1;
+        }
+          | class_element {
+            $$ = $1;
+        }
+          | TRU {
+            ASTNode* node = new ASTConstant(Value::makeBool(true));
+            $$ = makeExpr("bool", node);
+        }
+          | FLS {
+            ASTNode* node = new ASTConstant(Value::makeBool(false));
+            $$ = makeExpr("bool", node);
+        }
+          | INT_CONST {
+            $$ = makeExpr("int", new ASTConstant(Value::makeInt($1)));
+        }
+          | FLOAT_CONST {
+            $$ = makeExpr("float", new ASTConstant(Value::makeFloat($1)));
+        }
+          ;
+
+any_value_no_bool_const : call {
+                            $$ = $1;
+                        }
+                        | INT_CONST {
+                            $$ = makeExpr("int", new ASTConstant(Value::makeInt($1)));
+                        }
+                        | FLOAT_CONST {
+                            $$ = makeExpr("float", new ASTConstant(Value::makeFloat($1)));
+                        }
+                        | STRING_CONST {
+                            $$ = makeExpr("string", new ASTConstant(Value::makeString(*$1)));
+                        }
+                        ;
+
+comparison_operand : any_value_no_bool_const {
+                        $$ = $1;
+                    }
+                    | class_element {
+                        $$ = $1;
+                    }
+                    | '(' expression ')' {
+                        $$ = $2;
+                    }
+                    ;
+
+logic_expression : logic_expression OR logic_and {
+                    $$ = makeExpr("bool");
+                    if ($1->ast && $3->ast) {
+                        $$->ast = new ASTBinaryOp("||", $1->ast, $3->ast);
+                    }
+                 }
+                 | logic_and {
+                    $$ = $1; 
+                 }
+                 ;
+
+logic_and : logic_and AND logic_not {
+            $$ = makeExpr("bool");
+            if ($1->ast && $3->ast) {
+                $$->ast = new ASTBinaryOp("&&", $1->ast, $3->ast);
+            }
+            }
+          | logic_not {
+            $$ = $1; 
+          }
+          ;
+
+logic_not : NOT logic_not {
+            $$ = makeExpr("bool");
+            if ($2->ast) {
+                $$->ast = new ASTUnaryOp("not", $2->ast);
+            }
+            }
+          | logic_atom {
+            $$ = $1; 
+          }
+          ;
+
+logic_atom
+    : class_element {
+        if ($1 && *$1->type == "bool") {
+            $$ = $1;
+        } else {
+            if ($1 && *$1->type != "") {
+                cout << "Expected boolean expression, got type " << *$1->type << " at line " << yylineno << endl;
+            }
+            $$ = makeExpr("");
+            errorCount++;
+        }
+    }
+    | comparison_operand expression_comparisom comparison_operand %prec '<' {
+        if(*$1->type!=*$3->type){
+            if(*$1->type!="")
+                cout << "Invalid comparisom of type " << *$1->type << " and type " <<*$3->type<<" called at line " << yylineno << endl;
+            $$=makeExpr("");
+            errorCount++;
+        } else {
+            if(*$1->type=="int" || *$1->type=="float"){
+                $$=makeExpr("bool");
+                string op;
+                switch($2){
+                    case 1: op = "<"; break;
+                    case 2: op = "=="; break;
+                    case 3: op = "!="; break;
+                    case 4: op = ">"; break;
+                    case 5: op = "<="; break;
+                    case 6: op = ">="; break;
+                    default: op = ""; break;
+                }
+                if (!op.empty() && $1->ast && $3->ast) {
+                    $$->ast = new ASTBinaryOp(op, $1->ast, $3->ast);
+                }
+            }
+            else{
+                cout << "Invalid comparisom of elements of the type " << *$1->type <<" called at line " << yylineno << endl;
+                $$=makeExpr("");
+                errorCount++;
+            }
+        }
+    }
+    | '(' logic_expression ')' %prec OR { $$ = $2; }
+    | TRU {
+            ASTNode* node = new ASTConstant(Value::makeBool(true));
+            $$ = makeExpr("bool", node);
+        }
+    | FLS {
+            ASTNode* node = new ASTConstant(Value::makeBool(false));
+            $$ = makeExpr("bool", node);
+        }
     ;
 
-expr
-    : expr '+' expr { $$ = new ASTBinaryOp("+", $1, $3); }
-    | expr '-' expr { $$ = new ASTBinaryOp("-", $1, $3); }
-    | expr '*' expr { $$ = new ASTBinaryOp("*", $1, $3); }
-    | expr '/' expr { $$ = new ASTBinaryOp("/", $1, $3); }
-    | expr '%' expr { $$ = new ASTBinaryOp("%", $1, $3); }
-    | '-' expr %prec UMINUS { $$ = new ASTUnaryOp("-", $2); }
-    | '(' expr ')' { $$ = $2; }
-    | INT_CONST { $$ = new ASTConstant(Value::makeInt($1)); }
-    | FLOAT_CONST { $$ = new ASTConstant(Value::makeFloat($1)); }
-    | ID { $$ = new ASTId($1); }
+expression_comparisom : LT {$$=1;}
+                      | EQ {$$=2;}
+                      | NEQ {$$=3;}
+                      | GT {$$=4;}
+                      | LE {$$=5;}
+                      | GE {$$=6;}
+                      ;
+
+expression : '(' expression ')' {
+            $$ = $2;
+        }
+           | expression '+' expression {
+            if(*$1->type!=*$3->type){
+                cout << "Tried to make an addition on a " << *$1->type <<" with a "<<*$3->type<< " at line " << yylineno << endl;
+                errorCount++;
+                $$=makeExpr("");
+            }
+            else if(*$1->type=="int"||*$1->type=="float"){
+                $$=makeExpr(*$1->type);
+                if ($1->ast && $3->ast) {
+                    $$->ast = new ASTBinaryOp("+", $1->ast, $3->ast);
+                }
+            }
+            else{
+                 if(*$1->type!="")
+                    cout << "Invalid add operation for the type " << *$1->type << " called at line " << yylineno << endl;
+                 $$=makeExpr("");
+                 errorCount++;
+            }
+           }
+           | expression '-' expression {
+            if(*$1->type!=*$3->type){
+                cout << "Tried to substract from a " << *$1->type <<" with a "<<*$3->type<< " at line " << yylineno << endl;
+                errorCount++;
+                $$=makeExpr("");
+            }
+            else if(*$1->type=="int"||*$1->type=="float"){
+                $$=makeExpr(*$1->type);
+                if ($1->ast && $3->ast) {
+                    $$->ast = new ASTBinaryOp("-", $1->ast, $3->ast);
+                }
+            }
+            else{
+                 if(*$1->type!="")
+                    cout << "Invalid substract operation for the type " << *$1->type << " called at line " << yylineno << endl;
+                $$=makeExpr("");
+                 errorCount++;
+            }
+           }
+           | expression '/' expression{
+            if(*$1->type!=*$3->type){
+                cout << "Tried to divide a " << *$1->type <<" with a "<<*$3->type<< " at line " << yylineno << endl;
+                errorCount++;
+            }
+            else if(*$1->type=="int"||*$1->type=="float"){
+                $$=makeExpr(*$1->type);
+                if ($1->ast && $3->ast) {
+                    $$->ast = new ASTBinaryOp("/", $1->ast, $3->ast);
+                }
+            }
+            else{
+                 if(*$1->type!="")
+                    cout << "Invalid div operation for the type " << *$1->type << " called at line " << yylineno << endl;
+                 $$=makeExpr("");
+                 errorCount++;
+            }
+           }
+           | expression '*' expression{
+            if(*$1->type!=*$3->type){
+                cout << "Tried to mutiply a " << *$1->type <<" with a "<<*$3->type<< " at line " << yylineno << endl;
+                errorCount++;
+                $$=makeExpr("");
+            }
+            else if(*$1->type=="int"||*$1->type=="float"){
+                $$=makeExpr(*$1->type);
+                if ($1->ast && $3->ast) {
+                    $$->ast = new ASTBinaryOp("*", $1->ast, $3->ast);
+                }
+            }
+            else{
+                 if(*$1->type!="")
+                    cout << "Invalid multiply operation for the type " << *$1->type << " called at line " << yylineno << endl;
+                 $$=makeExpr("");
+                 errorCount++;
+            }
+           }
+           | expression '%' expression{
+            if(*$1->type!=*$3->type){
+                cout << "Tried to do a mod operation on a " << *$1->type <<" with a "<<*$3->type<< " at line " << yylineno << endl;
+                errorCount++;
+                $$=makeExpr("");
+            }
+            else if(*$1->type=="int"){
+                $$=makeExpr("int");
+                if ($1->ast && $3->ast) {
+                    $$->ast = new ASTBinaryOp("%", $1->ast, $3->ast);
+                }
+            }
+            else{
+                 if(*$1->type!="")
+                    cout << "Invalid mod operation for the type " << *$1->type << " called at line " << yylineno << endl;
+                 $$=makeExpr("");
+                 errorCount++;
+            }
+           }
+           | any_value_no_bool_const
+           | class_element
+           ;
+
+call_params
+    :
+    {
+        CallParams* cp = new CallParams();
+        cp->types = new vector<string>();
+        cp->asts = new vector<ASTNode*>();
+        $$ = cp;
+    }
+    | expression ',' call_params
+    {
+        $$ = $3;
+        string param_type = (*$1->type == "bool") ? "bool" : *$1->type;
+        $$->types->insert($$->types->begin(), param_type);
+        if ($1 && $1->ast) {
+            $$->asts->insert($$->asts->begin(), $1->ast);
+        } else {
+            $$->asts->insert($$->asts->begin(), new ASTOther());
+        }
+    }
+    | expression
+    {
+        CallParams* cp = new CallParams();
+        cp->types = new vector<string>();
+        cp->asts = new vector<ASTNode*>();
+        string param_type = (*$1->type == "bool") ? "bool" : *$1->type;
+        cp->types->push_back(param_type);
+        if ($1 && $1->ast) {
+            cp->asts->push_back($1->ast);
+        } else {
+            cp->asts->push_back(new ASTOther());
+        }
+        $$ = cp;
+    }
     ;
+
+
+class_element
+    : ID
+        {
+            IdInfo* v = current->getVar(*$1);
+            if(!v){
+                cout << "Undefined variable " << *$1 << " at line " << yylineno << endl;
+                errorCount++;
+                $$ = makeExpr("");
+                $$->ast = new ASTOther();
+            } else {
+                $$ = makeExpr(v->type);
+                $$->ast = new ASTId(*$1);
+            }
+        }
+    | class_element '.' ID
+{
+    SymTable* classScope = nullptr;
+    IdInfo* typeInfo = current->getClass(*$1->type);
+    if(!typeInfo){
+        cout << "Type " << *$1->type << " is not a class at line " << yylineno << endl;
+        errorCount++;
+        $$ = makeExpr("");
+        $$->ast = new ASTOther();
+    } else {
+        classScope = typeInfo->class_scope;
+        if(!classScope){
+            cout << "Class " << *$1->type << " has no scope at line " << yylineno << endl;
+            errorCount++;
+            $$ = makeExpr("");
+            $$->ast = new ASTOther();
+        } else {
+            IdInfo* field = classScope->getVar_current(*$3);
+            if(field){
+                $$ = makeExpr(field->type);
+                if ($1->ast) {
+                    $$->ast = new ASTFieldAccess($1->ast, *$3);
+                } else {
+                    $$->ast = new ASTOther();
+                }
+            } else {
+                IdInfo* method = classScope->getFunction(*$3);
+                if(method){
+                    $$ = makeExpr(method->type);
+                    $$->cur_scope = classScope;
+                    $$->ast = new ASTOther();
+                } else {
+                    cout << "Undefined class element or method " << *$3 << " at line " << yylineno << endl;
+                    errorCount++;
+                    $$ = makeExpr("");
+                    $$->ast = new ASTOther();
+                }
+            }
+        }
+    }
+}
+;
 
 %%
-
-void yyerror(const char* s) {
-    cout << "Error: " << s << " at line " << yylineno << endl;
+void yyerror(const char * s){
+     cout << "error:" << s << " at line: " << yylineno << endl;
 }
 
-int main() {
-    currentSym = new SymTable("global");
-    yyparse();
-    delete currentSym;
-    return 0;
+int main(int argc, char** argv){
+     yyin=fopen(argv[1],"r");
+     const string global="global";
+     current = new SymTable(global);
+     yyparse();
+     delete current;
 }
