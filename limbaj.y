@@ -107,6 +107,14 @@ progr : top_level main {
                 std::vector<ASTNode*>* definitions = $1;
                 std::vector<ASTNode*>* main_instrs = $2;
                 
+                if (definitions) {
+                    for (ASTNode* def : *definitions) {
+                        if (def) {
+                            def->setDefinitionsList(definitions);
+                        }
+                    }
+                }
+
                 if (main_instrs) {
                     for (ASTNode* instr : *main_instrs) {
                         if (instr) {
@@ -429,14 +437,14 @@ if_st : IF '(' expression ')' '{' code_block_no_definitions '}' {
         }
       ;
 
-call_statement : call {
+call_statement : call ';' {
     if ($1 && $1->ast) {
         $$ = $1->ast;
     } else {
         $$ = new ASTOther();
     }
 }
-;
+              ;
 
 while_loop : WHILE '(' expression ')' '{' code_block_no_definitions '}' {
             if ($3 && $3->ast && $6) {
@@ -449,6 +457,8 @@ while_loop : WHILE '(' expression ')' '{' code_block_no_definitions '}' {
         }
            ;
 
+/* --- CRITICAL UPDATE: ASSIGNMENT --- */
+/* Now accepts generic ASTNode on LHS (ID or FieldAccess) */
 assign_statement : class_element ASSIGN expression ';'
                  {
                     if($1 && $3 && *$3->type!=""){
@@ -462,13 +472,9 @@ assign_statement : class_element ASSIGN expression ';'
                     if ($3 && $3->ast) {
                         right_ast = $3->ast;
                     }
+                    
                     if ($1 && $1->ast && right_ast) {
-                        ASTId* id_node = dynamic_cast<ASTId*>($1->ast);
-                        if (id_node) {
-                            $$ = new ASTAssign(id_node, right_ast);
-                        } else {
-                            $$ = new ASTNull();
-                        }
+                        $$ = new ASTAssign($1->ast, right_ast);
                     } else {
                         $$ = new ASTNull();
                     }
@@ -685,6 +691,8 @@ call : ID '(' call_params ')' {
 }
 ;
 
+/* --- UPDATED CLASS ELEMENT LOGIC --- */
+/* Ensures ASTFieldAccess is created correctly when accessing obj.field */
 class_element
     : ID {
             IdInfo* v = current->getVar(*$1);

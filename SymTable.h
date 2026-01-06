@@ -84,6 +84,8 @@ public:
     SymTable* getClassScope(const string& className);
     SymTable* getFunctionScope(const string& funcName);
 
-    SymTable* getParent() const { return parent; }
-};
+    const map<string, IdInfo>& getVariables() const;
 
+    SymTable* getParent() const { return parent; }
+    void copyVariablesFrom(const SymTable* source);
+};
