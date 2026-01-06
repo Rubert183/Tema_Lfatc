@@ -457,8 +457,6 @@ while_loop : WHILE '(' expression ')' '{' code_block_no_definitions '}' {
         }
            ;
 
-/* --- CRITICAL UPDATE: ASSIGNMENT --- */
-/* Now accepts generic ASTNode on LHS (ID or FieldAccess) */
 assign_statement : class_element ASSIGN expression ';'
                  {
                     if($1 && $3 && *$3->type!=""){
@@ -691,8 +689,7 @@ call : ID '(' call_params ')' {
 }
 ;
 
-/* --- UPDATED CLASS ELEMENT LOGIC --- */
-/* Ensures ASTFieldAccess is created correctly when accessing obj.field */
+
 class_element
     : ID {
             IdInfo* v = current->getVar(*$1);

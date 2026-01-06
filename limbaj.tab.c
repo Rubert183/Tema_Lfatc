@@ -595,16 +595,16 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   103,   103,   143,   146,   154,   155,   156,   159,   159,
-     173,   189,   190,   199,   202,   202,   231,   234,   235,   238,
-     239,   242,   259,   259,   297,   300,   306,   309,   317,   334,
-     334,   364,   367,   372,   375,   376,   377,   378,   379,   380,
-     383,   386,   387,   388,   389,   390,   391,   392,   395,   396,
-     399,   402,   403,   404,   405,   406,   407,   408,   409,   412,
-     421,   433,   444,   453,   466,   490,   499,   502,   506,   507,
-     521,   531,   541,   551,   561,   565,   569,   573,   577,   581,
-     585,   589,   593,   597,   598,   599,   600,   601,   602,   603,
-     607,   613,   620,   632,   662,   703,   715
+       0,   103,   103,   139,   142,   150,   151,   152,   155,   155,
+     169,   185,   186,   195,   198,   198,   227,   230,   231,   234,
+     235,   238,   255,   255,   293,   296,   302,   305,   313,   330,
+     330,   360,   363,   368,   371,   372,   373,   374,   375,   376,
+     379,   382,   383,   384,   385,   386,   387,   388,   391,   392,
+     395,   398,   399,   400,   401,   402,   403,   404,   405,   408,
+     417,   429,   440,   449,   460,   482,   491,   494,   498,   499,
+     513,   523,   533,   543,   553,   557,   561,   565,   569,   573,
+     577,   581,   585,   589,   590,   591,   592,   593,   594,   595,
+     599,   605,   612,   624,   654,   694,   706
 };
 #endif
 
@@ -1318,9 +1318,6 @@ yyreduce:
                 std::vector<ASTNode*>* definitions = (yyvsp[-1].ast_list);
                 std::vector<ASTNode*>* main_instrs = (yyvsp[0].ast_list);
                 
-                // --- FIX STARTS HERE ---
-                // Pass the list of functions to the functions themselves
-                // so 'd' can see 'f' inside its body.
                 if (definitions) {
                     for (ASTNode* def : *definitions) {
                         if (def) {
@@ -1328,7 +1325,6 @@ yyreduce:
                         }
                     }
                 }
-                // --- FIX ENDS HERE ---
 
                 if (main_instrs) {
                     for (ASTNode* instr : *main_instrs) {
@@ -1349,48 +1345,48 @@ yyreduce:
             (yyval.program_lists)->definitions = (yyvsp[-1].ast_list);
             (yyval.program_lists)->main_instrs = (yyvsp[0].ast_list);
         }
-#line 1353 "limbaj.tab.c"
+#line 1349 "limbaj.tab.c"
     break;
 
   case 3: /* top_level: %empty  */
-#line 143 "limbaj.y"
+#line 139 "limbaj.y"
             {
             (yyval.ast_list) = new vector<ASTNode*>();
         }
-#line 1361 "limbaj.tab.c"
+#line 1357 "limbaj.tab.c"
     break;
 
   case 4: /* top_level: top_level top_level_decl  */
-#line 146 "limbaj.y"
+#line 142 "limbaj.y"
                                      {
             if ((yyvsp[0].ast)) {
                 (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast));
             }
             (yyval.ast_list) = (yyvsp[-1].ast_list);
         }
-#line 1372 "limbaj.tab.c"
+#line 1368 "limbaj.tab.c"
     break;
 
   case 5: /* top_level_decl: class  */
-#line 154 "limbaj.y"
+#line 150 "limbaj.y"
                        { (yyval.ast) = (yyvsp[0].ast); }
-#line 1378 "limbaj.tab.c"
+#line 1374 "limbaj.tab.c"
     break;
 
   case 6: /* top_level_decl: func  */
-#line 155 "limbaj.y"
+#line 151 "limbaj.y"
                       { (yyval.ast) = (yyvsp[0].ast); }
-#line 1384 "limbaj.tab.c"
+#line 1380 "limbaj.tab.c"
     break;
 
   case 7: /* top_level_decl: var  */
-#line 156 "limbaj.y"
+#line 152 "limbaj.y"
                      { (yyval.ast) = nullptr; }
-#line 1390 "limbaj.tab.c"
+#line 1386 "limbaj.tab.c"
     break;
 
   case 8: /* $@1: %empty  */
-#line 159 "limbaj.y"
+#line 155 "limbaj.y"
               {
              if(current->existsClass(*(yyvsp[0].strVal))){
                  cout << "Variable " << *(yyvsp[0].strVal) << " has the name of a class at line " << yylineno << endl;
@@ -1405,11 +1401,11 @@ yyreduce:
                     current->addVar(currentType, *(yyvsp[0].strVal));
              }
          }
-#line 1409 "limbaj.tab.c"
+#line 1405 "limbaj.tab.c"
     break;
 
   case 10: /* list_var: ID  */
-#line 173 "limbaj.y"
+#line 169 "limbaj.y"
               {
              if(current->existsClass(*(yyvsp[0].strVal))){
                  cout << "Variable " << *(yyvsp[0].strVal) << " has the name of a class at line " << yylineno << endl;
@@ -1424,17 +1420,17 @@ yyreduce:
                     current->addVar(currentType, *(yyvsp[0].strVal));
              }
          }
-#line 1428 "limbaj.tab.c"
+#line 1424 "limbaj.tab.c"
     break;
 
   case 11: /* type_or_class: TYPE  */
-#line 189 "limbaj.y"
+#line 185 "limbaj.y"
                      {currentType=*(yyvsp[0].strVal);}
-#line 1434 "limbaj.tab.c"
+#line 1430 "limbaj.tab.c"
     break;
 
   case 12: /* type_or_class: ID  */
-#line 190 "limbaj.y"
+#line 186 "limbaj.y"
                    {
                 if(!current->existsClass(*(yyvsp[0].strVal))){
                  cout << "Undeclared class " << *(yyvsp[0].strVal) << " at line " << yylineno << endl;
@@ -1442,11 +1438,11 @@ yyreduce:
                 }
                 currentType=*(yyvsp[0].strVal);
               }
-#line 1446 "limbaj.tab.c"
+#line 1442 "limbaj.tab.c"
     break;
 
   case 14: /* $@2: %empty  */
-#line 202 "limbaj.y"
+#line 198 "limbaj.y"
                        {
              if(current->existsClass(*(yyvsp[0].strVal))){
                  cout << "Function " << *(yyvsp[0].strVal) << " has the name of a class at line " << yylineno << endl;
@@ -1465,11 +1461,11 @@ yyreduce:
                         current = current->getFunctionScope(*(yyvsp[0].strVal));
              }
          }
-#line 1469 "limbaj.tab.c"
+#line 1465 "limbaj.tab.c"
     break;
 
   case 15: /* func: type_or_class ID $@2 '(' opt_param_list ')' '{' func_body '}'  */
-#line 219 "limbaj.y"
+#line 215 "limbaj.y"
                                                     {
             string func_name = *(yyvsp[-7].strVal);
             SymTable* func_scope = current->getFunctionScope(func_name);
@@ -1480,17 +1476,17 @@ yyreduce:
                 (yyval.ast) = nullptr;
             }
          }
-#line 1484 "limbaj.tab.c"
+#line 1480 "limbaj.tab.c"
     break;
 
   case 16: /* func_body: code_block  */
-#line 231 "limbaj.y"
+#line 227 "limbaj.y"
                        { (yyval.ast_list) = (yyvsp[0].ast_list); }
-#line 1490 "limbaj.tab.c"
+#line 1486 "limbaj.tab.c"
     break;
 
   case 21: /* param: type_or_class ID  */
-#line 242 "limbaj.y"
+#line 238 "limbaj.y"
                          {
              if(current->existsClass(*(yyvsp[0].strVal))){
                  cout << "Parameter " << *(yyvsp[0].strVal) << " has the name of a class at line " << yylineno << endl;
@@ -1506,11 +1502,11 @@ yyreduce:
                         current->addVar(currentType, *(yyvsp[0].strVal));
              }
          }
-#line 1510 "limbaj.tab.c"
+#line 1506 "limbaj.tab.c"
     break;
 
   case 22: /* $@3: %empty  */
-#line 259 "limbaj.y"
+#line 255 "limbaj.y"
                     {
         string className = *(yyvsp[0].strVal);
         if(current->existsVar(className)){
@@ -1529,11 +1525,11 @@ yyreduce:
             current = classScope;
         }
       }
-#line 1533 "limbaj.tab.c"
+#line 1529 "limbaj.tab.c"
     break;
 
   case 23: /* class: CLASS_MK ID $@3 '{' class_list '}' ';'  */
-#line 276 "limbaj.y"
+#line 272 "limbaj.y"
                                {
             string className = *(yyvsp[-5].strVal);
             SymTable* class_scope = current->getClassScope(className);
@@ -1553,49 +1549,49 @@ yyreduce:
                 (yyval.ast) = nullptr;
             }
         }
-#line 1557 "limbaj.tab.c"
+#line 1553 "limbaj.tab.c"
     break;
 
   case 24: /* class_list: field  */
-#line 297 "limbaj.y"
+#line 293 "limbaj.y"
                    {
             (yyval.ast_list) = new vector<ASTNode*>();
         }
-#line 1565 "limbaj.tab.c"
+#line 1561 "limbaj.tab.c"
     break;
 
   case 25: /* class_list: method  */
-#line 300 "limbaj.y"
+#line 296 "limbaj.y"
                     {
             (yyval.ast_list) = new vector<ASTNode*>();
             if ((yyvsp[0].ast)) {
                 (yyval.ast_list)->push_back((yyvsp[0].ast));
             }
         }
-#line 1576 "limbaj.tab.c"
+#line 1572 "limbaj.tab.c"
     break;
 
   case 26: /* class_list: class_list ',' field  */
-#line 306 "limbaj.y"
+#line 302 "limbaj.y"
                                   {
             (yyval.ast_list) = (yyvsp[-2].ast_list);
         }
-#line 1584 "limbaj.tab.c"
+#line 1580 "limbaj.tab.c"
     break;
 
   case 27: /* class_list: class_list ',' method  */
-#line 309 "limbaj.y"
+#line 305 "limbaj.y"
                                    {
             if ((yyvsp[0].ast)) {
                 (yyvsp[-2].ast_list)->push_back((yyvsp[0].ast));
             }
             (yyval.ast_list) = (yyvsp[-2].ast_list);
         }
-#line 1595 "limbaj.tab.c"
+#line 1591 "limbaj.tab.c"
     break;
 
   case 28: /* field: type_or_class ID  */
-#line 317 "limbaj.y"
+#line 313 "limbaj.y"
                          {
         string fieldName = *(yyvsp[0].strVal);
         if(current->existsClass(fieldName)){
@@ -1611,11 +1607,11 @@ yyreduce:
             current->addVar(currentType, fieldName); 
         }
     }
-#line 1615 "limbaj.tab.c"
+#line 1611 "limbaj.tab.c"
     break;
 
   case 29: /* $@4: %empty  */
-#line 334 "limbaj.y"
+#line 330 "limbaj.y"
                           {
     string methodName = *(yyvsp[0].strVal);
     if(current->existsClass(methodName)){
@@ -1635,11 +1631,11 @@ yyreduce:
         current = methodScope;
     }
     }
-#line 1639 "limbaj.tab.c"
+#line 1635 "limbaj.tab.c"
     break;
 
   case 30: /* method: type_or_class ID $@4 '(' opt_param_list ')' '{' method_body '}'  */
-#line 352 "limbaj.y"
+#line 348 "limbaj.y"
                                                  {
         string methodName = *(yyvsp[-7].strVal);
         SymTable* method_scope = current->getFunctionScope(methodName);
@@ -1650,187 +1646,187 @@ yyreduce:
             (yyval.ast) = nullptr;
         }
     }
-#line 1654 "limbaj.tab.c"
+#line 1650 "limbaj.tab.c"
     break;
 
   case 31: /* method_body: code_block  */
-#line 364 "limbaj.y"
+#line 360 "limbaj.y"
                          { (yyval.ast_list) = (yyvsp[0].ast_list); }
-#line 1660 "limbaj.tab.c"
+#line 1656 "limbaj.tab.c"
     break;
 
   case 32: /* main: MAIN_MK '{' main_code_block '}'  */
-#line 367 "limbaj.y"
+#line 363 "limbaj.y"
                                        {
             (yyval.ast_list) = (yyvsp[-1].ast_list);
         }
-#line 1668 "limbaj.tab.c"
+#line 1664 "limbaj.tab.c"
     break;
 
   case 33: /* main_code_block: %empty  */
-#line 372 "limbaj.y"
+#line 368 "limbaj.y"
                   {
             (yyval.ast_list) = new vector<ASTNode*>();
         }
-#line 1676 "limbaj.tab.c"
+#line 1672 "limbaj.tab.c"
     break;
 
   case 34: /* main_code_block: main_code_block if_else_st  */
-#line 375 "limbaj.y"
+#line 371 "limbaj.y"
                                      { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1682 "limbaj.tab.c"
+#line 1678 "limbaj.tab.c"
     break;
 
   case 35: /* main_code_block: main_code_block if_st  */
-#line 376 "limbaj.y"
+#line 372 "limbaj.y"
                                 { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1688 "limbaj.tab.c"
+#line 1684 "limbaj.tab.c"
     break;
 
   case 36: /* main_code_block: main_code_block call_statement  */
-#line 377 "limbaj.y"
+#line 373 "limbaj.y"
                                          { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1694 "limbaj.tab.c"
+#line 1690 "limbaj.tab.c"
     break;
 
   case 37: /* main_code_block: main_code_block while_loop  */
-#line 378 "limbaj.y"
+#line 374 "limbaj.y"
                                      { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1700 "limbaj.tab.c"
+#line 1696 "limbaj.tab.c"
     break;
 
   case 38: /* main_code_block: main_code_block assign_statement  */
-#line 379 "limbaj.y"
+#line 375 "limbaj.y"
                                            { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1706 "limbaj.tab.c"
+#line 1702 "limbaj.tab.c"
     break;
 
   case 39: /* main_code_block: main_code_block print_statement  */
-#line 380 "limbaj.y"
+#line 376 "limbaj.y"
                                           { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1712 "limbaj.tab.c"
+#line 1708 "limbaj.tab.c"
     break;
 
   case 40: /* code_block_no_definitions: %empty  */
-#line 383 "limbaj.y"
+#line 379 "limbaj.y"
                             {
             (yyval.ast_list) = new vector<ASTNode*>();
         }
-#line 1720 "limbaj.tab.c"
+#line 1716 "limbaj.tab.c"
     break;
 
   case 41: /* code_block_no_definitions: code_block_no_definitions if_else_st  */
-#line 386 "limbaj.y"
+#line 382 "limbaj.y"
                                                { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1726 "limbaj.tab.c"
+#line 1722 "limbaj.tab.c"
     break;
 
   case 42: /* code_block_no_definitions: code_block_no_definitions if_st  */
-#line 387 "limbaj.y"
+#line 383 "limbaj.y"
                                           { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1732 "limbaj.tab.c"
+#line 1728 "limbaj.tab.c"
     break;
 
   case 43: /* code_block_no_definitions: code_block_no_definitions call_statement  */
-#line 388 "limbaj.y"
+#line 384 "limbaj.y"
                                                    { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1738 "limbaj.tab.c"
+#line 1734 "limbaj.tab.c"
     break;
 
   case 44: /* code_block_no_definitions: code_block_no_definitions while_loop  */
-#line 389 "limbaj.y"
+#line 385 "limbaj.y"
                                                { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1744 "limbaj.tab.c"
+#line 1740 "limbaj.tab.c"
     break;
 
   case 45: /* code_block_no_definitions: code_block_no_definitions assign_statement  */
-#line 390 "limbaj.y"
+#line 386 "limbaj.y"
                                                      { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1750 "limbaj.tab.c"
+#line 1746 "limbaj.tab.c"
     break;
 
   case 46: /* code_block_no_definitions: code_block_no_definitions print_statement  */
-#line 391 "limbaj.y"
+#line 387 "limbaj.y"
                                                     { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1756 "limbaj.tab.c"
+#line 1752 "limbaj.tab.c"
     break;
 
   case 47: /* code_block_no_definitions: code_block_no_definitions return_statement  */
-#line 392 "limbaj.y"
+#line 388 "limbaj.y"
                                                      { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1762 "limbaj.tab.c"
+#line 1758 "limbaj.tab.c"
     break;
 
   case 48: /* return_statement: return_val ';'  */
-#line 395 "limbaj.y"
+#line 391 "limbaj.y"
                                   { (yyval.ast) = (yyvsp[-1].ast); }
-#line 1768 "limbaj.tab.c"
+#line 1764 "limbaj.tab.c"
     break;
 
   case 49: /* return_statement: return_nothing ';'  */
-#line 396 "limbaj.y"
+#line 392 "limbaj.y"
                                       { (yyval.ast) = new ASTReturn(); }
-#line 1774 "limbaj.tab.c"
+#line 1770 "limbaj.tab.c"
     break;
 
   case 50: /* code_block: %empty  */
-#line 399 "limbaj.y"
+#line 395 "limbaj.y"
              {
             (yyval.ast_list) = new vector<ASTNode*>();
         }
-#line 1782 "limbaj.tab.c"
+#line 1778 "limbaj.tab.c"
     break;
 
   case 51: /* code_block: code_block if_else_st  */
-#line 402 "limbaj.y"
+#line 398 "limbaj.y"
                                 { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1788 "limbaj.tab.c"
+#line 1784 "limbaj.tab.c"
     break;
 
   case 52: /* code_block: code_block if_st  */
-#line 403 "limbaj.y"
+#line 399 "limbaj.y"
                            { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1794 "limbaj.tab.c"
+#line 1790 "limbaj.tab.c"
     break;
 
   case 53: /* code_block: code_block call_statement  */
-#line 404 "limbaj.y"
+#line 400 "limbaj.y"
                                     { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1800 "limbaj.tab.c"
+#line 1796 "limbaj.tab.c"
     break;
 
   case 54: /* code_block: code_block while_loop  */
-#line 405 "limbaj.y"
+#line 401 "limbaj.y"
                                 { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1806 "limbaj.tab.c"
+#line 1802 "limbaj.tab.c"
     break;
 
   case 55: /* code_block: code_block assign_statement  */
-#line 406 "limbaj.y"
+#line 402 "limbaj.y"
                                       { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1812 "limbaj.tab.c"
+#line 1808 "limbaj.tab.c"
     break;
 
   case 56: /* code_block: code_block var_definition  */
-#line 407 "limbaj.y"
+#line 403 "limbaj.y"
                                     { (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1818 "limbaj.tab.c"
+#line 1814 "limbaj.tab.c"
     break;
 
   case 57: /* code_block: code_block print_statement  */
-#line 408 "limbaj.y"
+#line 404 "limbaj.y"
                                      { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1824 "limbaj.tab.c"
+#line 1820 "limbaj.tab.c"
     break;
 
   case 58: /* code_block: code_block return_statement  */
-#line 409 "limbaj.y"
+#line 405 "limbaj.y"
                                       { (yyvsp[-1].ast_list)->push_back((yyvsp[0].ast)); (yyval.ast_list) = (yyvsp[-1].ast_list); }
-#line 1830 "limbaj.tab.c"
+#line 1826 "limbaj.tab.c"
     break;
 
   case 59: /* print_statement: PRINT '(' expression ')' ';'  */
-#line 412 "limbaj.y"
+#line 408 "limbaj.y"
                                                {
             if ((yyvsp[-2].expr) && (yyvsp[-2].expr)->ast) {
                 (yyval.ast) = new ASTPrint((yyvsp[-2].expr)->ast);
@@ -1838,11 +1834,11 @@ yyreduce:
                 (yyval.ast) = new ASTNull();
             }
         }
-#line 1842 "limbaj.tab.c"
+#line 1838 "limbaj.tab.c"
     break;
 
   case 60: /* if_else_st: IF '(' expression ')' '{' code_block_no_definitions '}' ELSE '{' code_block_no_definitions '}'  */
-#line 421 "limbaj.y"
+#line 417 "limbaj.y"
                                                                                                             {
             if ((yyvsp[-8].expr) && (yyvsp[-8].expr)->ast && (yyvsp[-5].ast_list) && (yyvsp[-1].ast_list)) {
                 ASTNode* cond = (yyvsp[-8].expr)->ast;
@@ -1853,11 +1849,11 @@ yyreduce:
                 (yyval.ast) = new ASTNull();
             }
         }
-#line 1857 "limbaj.tab.c"
+#line 1853 "limbaj.tab.c"
     break;
 
   case 61: /* if_st: IF '(' expression ')' '{' code_block_no_definitions '}'  */
-#line 433 "limbaj.y"
+#line 429 "limbaj.y"
                                                                 {
             if ((yyvsp[-4].expr) && (yyvsp[-4].expr)->ast && (yyvsp[-1].ast_list)) {
                 ASTNode* cond = (yyvsp[-4].expr)->ast;
@@ -1867,11 +1863,11 @@ yyreduce:
                 (yyval.ast) = new ASTNull();
             }
         }
-#line 1871 "limbaj.tab.c"
+#line 1867 "limbaj.tab.c"
     break;
 
   case 62: /* call_statement: call ';'  */
-#line 444 "limbaj.y"
+#line 440 "limbaj.y"
                           {
     if ((yyvsp[-1].expr) && (yyvsp[-1].expr)->ast) {
         (yyval.ast) = (yyvsp[-1].expr)->ast;
@@ -1879,11 +1875,11 @@ yyreduce:
         (yyval.ast) = new ASTOther();
     }
 }
-#line 1883 "limbaj.tab.c"
+#line 1879 "limbaj.tab.c"
     break;
 
   case 63: /* while_loop: WHILE '(' expression ')' '{' code_block_no_definitions '}'  */
-#line 453 "limbaj.y"
+#line 449 "limbaj.y"
                                                                         {
             if ((yyvsp[-4].expr) && (yyvsp[-4].expr)->ast && (yyvsp[-1].ast_list)) {
                 ASTNode* cond = (yyvsp[-4].expr)->ast;
@@ -1893,11 +1889,11 @@ yyreduce:
                 (yyval.ast) = new ASTNull();
             }
         }
-#line 1897 "limbaj.tab.c"
+#line 1893 "limbaj.tab.c"
     break;
 
   case 64: /* assign_statement: class_element ASSIGN expression ';'  */
-#line 467 "limbaj.y"
+#line 461 "limbaj.y"
                  {
                     if((yyvsp[-3].expr) && (yyvsp[-1].expr) && *(yyvsp[-1].expr)->type!=""){
                         if (*(yyvsp[-3].expr)->type != *(yyvsp[-1].expr)->type) {
@@ -1912,18 +1908,16 @@ yyreduce:
                     }
                     
                     if ((yyvsp[-3].expr) && (yyvsp[-3].expr)->ast && right_ast) {
-                        // REMOVED dynamic_cast<ASTId*>. We now pass $1->ast directly.
-                        // ASTAssign in Ast.h now handles ASTFieldAccess or ASTId internally.
                         (yyval.ast) = new ASTAssign((yyvsp[-3].expr)->ast, right_ast);
                     } else {
                         (yyval.ast) = new ASTNull();
                     }
                  }
-#line 1923 "limbaj.tab.c"
+#line 1917 "limbaj.tab.c"
     break;
 
   case 65: /* return_val: RETURN expression  */
-#line 490 "limbaj.y"
+#line 482 "limbaj.y"
                                {
             if ((yyvsp[0].expr) && (yyvsp[0].expr)->ast) {
                 (yyval.ast) = new ASTReturn((yyvsp[0].expr)->ast);
@@ -1931,17 +1925,17 @@ yyreduce:
                 (yyval.ast) = new ASTReturn();
             }
         }
-#line 1935 "limbaj.tab.c"
+#line 1929 "limbaj.tab.c"
     break;
 
   case 68: /* expression: '(' expression ')'  */
-#line 506 "limbaj.y"
+#line 498 "limbaj.y"
                          { (yyval.expr) = (yyvsp[-1].expr); }
-#line 1941 "limbaj.tab.c"
+#line 1935 "limbaj.tab.c"
     break;
 
   case 69: /* expression: expression '+' expression  */
-#line 507 "limbaj.y"
+#line 499 "limbaj.y"
                                 {
         if(*(yyvsp[-2].expr)->type!=*(yyvsp[0].expr)->type){
             cout << "Invalid addition type mismatch at line " << yylineno << endl;
@@ -1956,11 +1950,11 @@ yyreduce:
             errorCount++;
         }
     }
-#line 1960 "limbaj.tab.c"
+#line 1954 "limbaj.tab.c"
     break;
 
   case 70: /* expression: expression '-' expression  */
-#line 521 "limbaj.y"
+#line 513 "limbaj.y"
                                 {
         if(*(yyvsp[-2].expr)->type!=*(yyvsp[0].expr)->type){
             cout << "Type mismatch -" << endl; errorCount++; (yyval.expr)=makeExpr("");
@@ -1971,11 +1965,11 @@ yyreduce:
             cout << "Invalid sub op" << endl; errorCount++; (yyval.expr)=makeExpr("");
         }
     }
-#line 1975 "limbaj.tab.c"
+#line 1969 "limbaj.tab.c"
     break;
 
   case 71: /* expression: expression '*' expression  */
-#line 531 "limbaj.y"
+#line 523 "limbaj.y"
                                 {
         if(*(yyvsp[-2].expr)->type!=*(yyvsp[0].expr)->type){
             cout << "Type mismatch *" << endl; errorCount++; (yyval.expr)=makeExpr("");
@@ -1986,11 +1980,11 @@ yyreduce:
             cout << "Invalid mul op" << endl; errorCount++; (yyval.expr)=makeExpr("");
         }
     }
-#line 1990 "limbaj.tab.c"
+#line 1984 "limbaj.tab.c"
     break;
 
   case 72: /* expression: expression '/' expression  */
-#line 541 "limbaj.y"
+#line 533 "limbaj.y"
                                 {
         if(*(yyvsp[-2].expr)->type!=*(yyvsp[0].expr)->type){
             cout << "Type mismatch /" << endl; errorCount++; (yyval.expr)=makeExpr("");
@@ -2001,11 +1995,11 @@ yyreduce:
             cout << "Invalid div op" << endl; errorCount++; (yyval.expr)=makeExpr("");
         }
     }
-#line 2005 "limbaj.tab.c"
+#line 1999 "limbaj.tab.c"
     break;
 
   case 73: /* expression: expression '%' expression  */
-#line 551 "limbaj.y"
+#line 543 "limbaj.y"
                                 {
         if(*(yyvsp[-2].expr)->type!=*(yyvsp[0].expr)->type){
             cout << "Type mismatch %" << endl; errorCount++; (yyval.expr)=makeExpr("");
@@ -2016,145 +2010,145 @@ yyreduce:
             cout << "Invalid mod op" << endl; errorCount++; (yyval.expr)=makeExpr("");
         }
     }
-#line 2020 "limbaj.tab.c"
+#line 2014 "limbaj.tab.c"
     break;
 
   case 74: /* expression: expression OR expression  */
-#line 561 "limbaj.y"
+#line 553 "limbaj.y"
                                {
         (yyval.expr) = makeExpr("bool");
         if ((yyvsp[-2].expr)->ast && (yyvsp[0].expr)->ast) (yyval.expr)->ast = new ASTBinaryOp("||", (yyvsp[-2].expr)->ast, (yyvsp[0].expr)->ast);
     }
-#line 2029 "limbaj.tab.c"
+#line 2023 "limbaj.tab.c"
     break;
 
   case 75: /* expression: expression AND expression  */
-#line 565 "limbaj.y"
+#line 557 "limbaj.y"
                                 {
         (yyval.expr) = makeExpr("bool");
         if ((yyvsp[-2].expr)->ast && (yyvsp[0].expr)->ast) (yyval.expr)->ast = new ASTBinaryOp("&&", (yyvsp[-2].expr)->ast, (yyvsp[0].expr)->ast);
     }
-#line 2038 "limbaj.tab.c"
+#line 2032 "limbaj.tab.c"
     break;
 
   case 76: /* expression: NOT expression  */
-#line 569 "limbaj.y"
+#line 561 "limbaj.y"
                      {
         (yyval.expr) = makeExpr("bool");
         if ((yyvsp[0].expr)->ast) (yyval.expr)->ast = new ASTUnaryOp("not", (yyvsp[0].expr)->ast);
     }
-#line 2047 "limbaj.tab.c"
+#line 2041 "limbaj.tab.c"
     break;
 
   case 77: /* expression: expression LT expression  */
-#line 573 "limbaj.y"
+#line 565 "limbaj.y"
                                {
         if(*(yyvsp[-2].expr)->type != *(yyvsp[0].expr)->type) { errorCount++; (yyval.expr)=makeExpr(""); }
         else { (yyval.expr)=makeExpr("bool"); if((yyvsp[-2].expr)->ast && (yyvsp[0].expr)->ast) (yyval.expr)->ast = new ASTBinaryOp("<", (yyvsp[-2].expr)->ast, (yyvsp[0].expr)->ast); }
     }
-#line 2056 "limbaj.tab.c"
+#line 2050 "limbaj.tab.c"
     break;
 
   case 78: /* expression: expression GT expression  */
-#line 577 "limbaj.y"
+#line 569 "limbaj.y"
                                {
         if(*(yyvsp[-2].expr)->type != *(yyvsp[0].expr)->type) { errorCount++; (yyval.expr)=makeExpr(""); }
         else { (yyval.expr)=makeExpr("bool"); if((yyvsp[-2].expr)->ast && (yyvsp[0].expr)->ast) (yyval.expr)->ast = new ASTBinaryOp(">", (yyvsp[-2].expr)->ast, (yyvsp[0].expr)->ast); }
     }
-#line 2065 "limbaj.tab.c"
+#line 2059 "limbaj.tab.c"
     break;
 
   case 79: /* expression: expression LE expression  */
-#line 581 "limbaj.y"
+#line 573 "limbaj.y"
                                {
         if(*(yyvsp[-2].expr)->type != *(yyvsp[0].expr)->type) { errorCount++; (yyval.expr)=makeExpr(""); }
         else { (yyval.expr)=makeExpr("bool"); if((yyvsp[-2].expr)->ast && (yyvsp[0].expr)->ast) (yyval.expr)->ast = new ASTBinaryOp("<=", (yyvsp[-2].expr)->ast, (yyvsp[0].expr)->ast); }
     }
-#line 2074 "limbaj.tab.c"
+#line 2068 "limbaj.tab.c"
     break;
 
   case 80: /* expression: expression GE expression  */
-#line 585 "limbaj.y"
+#line 577 "limbaj.y"
                                {
         if(*(yyvsp[-2].expr)->type != *(yyvsp[0].expr)->type) { errorCount++; (yyval.expr)=makeExpr(""); }
         else { (yyval.expr)=makeExpr("bool"); if((yyvsp[-2].expr)->ast && (yyvsp[0].expr)->ast) (yyval.expr)->ast = new ASTBinaryOp(">=", (yyvsp[-2].expr)->ast, (yyvsp[0].expr)->ast); }
     }
-#line 2083 "limbaj.tab.c"
+#line 2077 "limbaj.tab.c"
     break;
 
   case 81: /* expression: expression EQ expression  */
-#line 589 "limbaj.y"
+#line 581 "limbaj.y"
                                {
         if(*(yyvsp[-2].expr)->type != *(yyvsp[0].expr)->type) { errorCount++; (yyval.expr)=makeExpr(""); }
         else { (yyval.expr)=makeExpr("bool"); if((yyvsp[-2].expr)->ast && (yyvsp[0].expr)->ast) (yyval.expr)->ast = new ASTBinaryOp("==", (yyvsp[-2].expr)->ast, (yyvsp[0].expr)->ast); }
     }
-#line 2092 "limbaj.tab.c"
+#line 2086 "limbaj.tab.c"
     break;
 
   case 82: /* expression: expression NEQ expression  */
-#line 593 "limbaj.y"
+#line 585 "limbaj.y"
                                 {
         if(*(yyvsp[-2].expr)->type != *(yyvsp[0].expr)->type) { errorCount++; (yyval.expr)=makeExpr(""); }
         else { (yyval.expr)=makeExpr("bool"); if((yyvsp[-2].expr)->ast && (yyvsp[0].expr)->ast) (yyval.expr)->ast = new ASTBinaryOp("!=", (yyvsp[-2].expr)->ast, (yyvsp[0].expr)->ast); }
     }
-#line 2101 "limbaj.tab.c"
+#line 2095 "limbaj.tab.c"
     break;
 
   case 83: /* expression: call  */
-#line 597 "limbaj.y"
+#line 589 "limbaj.y"
            { (yyval.expr) = (yyvsp[0].expr); }
-#line 2107 "limbaj.tab.c"
+#line 2101 "limbaj.tab.c"
     break;
 
   case 84: /* expression: class_element  */
-#line 598 "limbaj.y"
+#line 590 "limbaj.y"
                     { (yyval.expr) = (yyvsp[0].expr); }
-#line 2113 "limbaj.tab.c"
+#line 2107 "limbaj.tab.c"
     break;
 
   case 85: /* expression: TRU  */
-#line 599 "limbaj.y"
+#line 591 "limbaj.y"
           { (yyval.expr) = makeExpr("bool", new ASTConstant(Value::makeBool(true))); }
-#line 2119 "limbaj.tab.c"
+#line 2113 "limbaj.tab.c"
     break;
 
   case 86: /* expression: FLS  */
-#line 600 "limbaj.y"
+#line 592 "limbaj.y"
           { (yyval.expr) = makeExpr("bool", new ASTConstant(Value::makeBool(false))); }
-#line 2125 "limbaj.tab.c"
+#line 2119 "limbaj.tab.c"
     break;
 
   case 87: /* expression: INT_CONST  */
-#line 601 "limbaj.y"
+#line 593 "limbaj.y"
                 { (yyval.expr) = makeExpr("int", new ASTConstant(Value::makeInt((yyvsp[0].intVal)))); }
-#line 2131 "limbaj.tab.c"
+#line 2125 "limbaj.tab.c"
     break;
 
   case 88: /* expression: FLOAT_CONST  */
-#line 602 "limbaj.y"
+#line 594 "limbaj.y"
                   { (yyval.expr) = makeExpr("float", new ASTConstant(Value::makeFloat((yyvsp[0].floatVal)))); }
-#line 2137 "limbaj.tab.c"
+#line 2131 "limbaj.tab.c"
     break;
 
   case 89: /* expression: STRING_CONST  */
-#line 603 "limbaj.y"
+#line 595 "limbaj.y"
                    { (yyval.expr) = makeExpr("string", new ASTConstant(Value::makeString(*(yyvsp[0].strVal)))); }
-#line 2143 "limbaj.tab.c"
+#line 2137 "limbaj.tab.c"
     break;
 
   case 90: /* call_params: %empty  */
-#line 607 "limbaj.y"
+#line 599 "limbaj.y"
       {
         CallParams* cp = new CallParams();
         cp->types = new vector<string>();
         cp->asts = new vector<ASTNode*>();
         (yyval.call_params) = cp;
     }
-#line 2154 "limbaj.tab.c"
+#line 2148 "limbaj.tab.c"
     break;
 
   case 91: /* call_params: expression ',' call_params  */
-#line 613 "limbaj.y"
+#line 605 "limbaj.y"
                                  {
         (yyval.call_params) = (yyvsp[0].call_params);
         string param_type = (*(yyvsp[-2].expr)->type == "bool") ? "bool" : *(yyvsp[-2].expr)->type;
@@ -2162,11 +2156,11 @@ yyreduce:
         if ((yyvsp[-2].expr) && (yyvsp[-2].expr)->ast) (yyval.call_params)->asts->insert((yyval.call_params)->asts->begin(), (yyvsp[-2].expr)->ast);
         else (yyval.call_params)->asts->insert((yyval.call_params)->asts->begin(), new ASTOther());
     }
-#line 2166 "limbaj.tab.c"
+#line 2160 "limbaj.tab.c"
     break;
 
   case 92: /* call_params: expression  */
-#line 620 "limbaj.y"
+#line 612 "limbaj.y"
                  {
         CallParams* cp = new CallParams();
         cp->types = new vector<string>();
@@ -2177,11 +2171,11 @@ yyreduce:
         else cp->asts->push_back(new ASTOther());
         (yyval.call_params) = cp;
     }
-#line 2181 "limbaj.tab.c"
+#line 2175 "limbaj.tab.c"
     break;
 
   case 93: /* call: ID '(' call_params ')'  */
-#line 632 "limbaj.y"
+#line 624 "limbaj.y"
                               {
     IdInfo* f = current->getFunction(*(yyvsp[-3].strVal));
     Expr* expr_result = nullptr;
@@ -2212,11 +2206,11 @@ yyreduce:
     }
     (yyval.expr) = expr_result;
 }
-#line 2216 "limbaj.tab.c"
+#line 2210 "limbaj.tab.c"
     break;
 
   case 94: /* call: class_element '.' ID '(' call_params ')'  */
-#line 662 "limbaj.y"
+#line 654 "limbaj.y"
                                            {
     IdInfo* typeInfo = current->getClass(*(yyvsp[-5].expr)->type);
     Expr* expr_result = nullptr;
@@ -2253,11 +2247,11 @@ yyreduce:
     }
     (yyval.expr) = expr_result;
 }
-#line 2257 "limbaj.tab.c"
+#line 2251 "limbaj.tab.c"
     break;
 
   case 95: /* class_element: ID  */
-#line 703 "limbaj.y"
+#line 694 "limbaj.y"
          {
             IdInfo* v = current->getVar(*(yyvsp[0].strVal));
             if(!v){
@@ -2270,11 +2264,11 @@ yyreduce:
                 (yyval.expr)->ast = new ASTId(*(yyvsp[0].strVal));
             }
         }
-#line 2274 "limbaj.tab.c"
+#line 2268 "limbaj.tab.c"
     break;
 
   case 96: /* class_element: class_element '.' ID  */
-#line 715 "limbaj.y"
+#line 706 "limbaj.y"
                            {
     SymTable* classScope = nullptr;
     IdInfo* typeInfo = current->getClass(*(yyvsp[-2].expr)->type);
@@ -2292,7 +2286,7 @@ yyreduce:
             IdInfo* field = classScope->getVar_current(*(yyvsp[0].strVal));
             if(field){
                 (yyval.expr) = makeExpr(field->type);
-                if ((yyvsp[-2].expr)->ast) (yyval.expr)->ast = new ASTFieldAccess((yyvsp[-2].expr)->ast, *(yyvsp[0].strVal)); // Creates ASTFieldAccess
+                if ((yyvsp[-2].expr)->ast) (yyval.expr)->ast = new ASTFieldAccess((yyvsp[-2].expr)->ast, *(yyvsp[0].strVal));
                 else (yyval.expr)->ast = new ASTOther();
             } else {
                 IdInfo* method = classScope->getFunction(*(yyvsp[0].strVal));
@@ -2308,11 +2302,11 @@ yyreduce:
         }
     }
 }
-#line 2312 "limbaj.tab.c"
+#line 2306 "limbaj.tab.c"
     break;
 
 
-#line 2316 "limbaj.tab.c"
+#line 2310 "limbaj.tab.c"
 
       default: break;
     }
@@ -2505,7 +2499,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 750 "limbaj.y"
+#line 741 "limbaj.y"
 
 void yyerror(const char * s){
      cout << "error:" << s << " at line: " << yylineno << endl;
