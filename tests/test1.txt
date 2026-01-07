@@ -1,0 +1,13 @@
+int a;
+int add5() {
+    a := a + 5;
+    return;
+}
+int b;
+main {
+    Print(a);
+    Print(b);
+    b := add5();
+    Print(a);
+    Print(b);
+}

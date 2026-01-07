@@ -1,0 +1,183 @@
+int global_x;
+int global_y;
+float global_result;
+
+int factorial(int n) {
+    int result;
+    result := 1;
+    int i;
+    i := 1;
+    while (i <= n) {
+        result := result * i;
+        i := i + 1;
+    }
+    return result;
+}
+
+int max(int a, int b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+float calculate(float x, float y, bool use_multiply) {
+    float temp;
+    if (use_multiply) {
+        temp := x * y;
+    } else {
+        temp := x + y;
+    }
+    temp := temp / 2.0;
+    return temp;
+}
+
+int add(int x) {
+    x := x + 1;
+    return x;
+}
+
+class Calculator {
+    int value,
+    int history,
+    
+    int add(int x) {
+        value := value + x;
+        history := history + 1;
+        return value;
+    },
+    
+    int multiply(int x) {
+        value := value * x;
+        history := history + 1;
+        return value;
+    },
+    
+    int reset() {
+        value := 0;
+        history := 0;
+        return value;
+    },
+    
+    int complex_operation(int a, int b) {
+        int temp;
+        temp := add(a);
+        temp := multiply(b);
+        return value;
+    }
+};
+
+class MathHelper {
+    int base,
+    
+    int power(int exp) {
+        int result;
+        result := 1;
+        int i;
+        i := 0;
+        while (i < exp) {
+            result := result * base;
+            i := i + 1;
+        }
+        return result;
+    },
+    
+    int factorial_wrapper(int n) {
+        return factorial(n);
+    }
+};
+
+int fact_result;
+int max_val;
+float calc_result;
+Calculator calc1;
+int add_result;
+int mult_result;
+int complex_result;
+int reset_result;
+MathHelper helper;
+int power_result;
+int fact_wrap_result;
+int sum;
+int counter;
+int test_val;
+bool bool_test;
+int complex_math;
+int expr_result;
+int nested_result;
+
+main {
+    global_x := 10;
+    global_y := 5;
+    
+    fact_result := factorial(5);
+    Print(fact_result);
+    
+    max_val := max(global_x, global_y);
+    Print(max_val);
+    
+    calc_result := calculate(8.0, 4.0, true);
+    Print(calc_result);
+    calc_result := calculate(8.1, 4.1, false);
+    Print(calc_result);
+    
+    calc1.value := 10;
+    calc1.history := 0;
+    
+    add_result := calc1.add(5);
+    Print(add_result);
+    
+    mult_result := calc1.multiply(3);
+    Print(mult_result);
+    
+    complex_result := calc1.complex_operation(2, 4);
+    Print(complex_result);
+    
+    reset_result := calc1.reset();
+    Print(reset_result);
+    
+    helper.base := 2;
+    
+    power_result := helper.power(8);
+    Print(power_result);
+    
+    fact_wrap_result := helper.factorial_wrapper(4);
+    Print(fact_wrap_result);
+    
+    sum := 0;
+    counter := 1;
+    while (counter <= 10) {
+        sum := sum + counter;
+        counter := counter + 1;
+    }
+    Print(sum);
+    
+    test_val := 15;
+    if (test_val > 10) {
+        if (test_val < 20) {
+            test_val := test_val * 2;
+        } else {
+            test_val := test_val / 2;
+        }
+    } else {
+        test_val := test_val + 10;
+    }
+    Print(test_val);
+    
+    bool_test := (1 + 1) < 1;
+    if (bool_test) {
+        Print(1);
+    } else {
+        Print(0);
+    }
+    
+    complex_math := (global_x * global_y) + (global_x * add(global_y)) - (max_val * 56);
+    Print(complex_math);
+    
+    expr_result := calc1.add(global_x + global_y);
+    Print(expr_result);
+    
+    nested_result := max(calc1.value, helper.base);
+    Print(nested_result);
+}

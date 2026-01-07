@@ -1,0 +1,27 @@
+class MyClass {
+    int c1,
+    int c2,
+    int add5(int v) {
+        c1 := c1 + v;
+        v := v + 5;
+        return v;
+    },
+    int f(int v) {
+        if (v > 1)
+        {
+            return v * f(v - 1);
+        }
+        else {
+            return 1;
+        }
+    }
+};
+
+MyClass a;
+main {
+    a.c1 := 3;
+    a.c2 := a.add5(10);
+    Print(a.c1);
+    Print(a.c2);
+    Print(a.f(4));
+}

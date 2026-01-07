@@ -1,7 +1,9 @@
+#pragma once
 #include <string>
 #include <map>
 #include <vector>
 #include <iostream>
+#include "Value.h"
 
 using namespace std;
 
@@ -9,8 +11,8 @@ class SymTable;
 
 class IdInfo {
 public:
-    string name;
-    string type;
+    string name, type;
+    Value value;
 
     vector<pair<string,string>> params;
     void add_param(const string& type,const string& name){
@@ -21,8 +23,28 @@ public:
     SymTable* class_scope = nullptr;
 
     IdInfo() = default;
-    IdInfo(const string& name, const string& type)
-        : name(name), type(type) {}
+    IdInfo(const string& name, const string& type) : name(name), type(type) {
+        if (type == "int") {
+            value.data = 0;
+            value.type = ValueType::INT;
+        }
+        else if (type == "float") {
+            value.data = 0.f;
+            value.type = ValueType::FLOAT;
+        }
+        else if (type == "bool") {
+            value.data = true;
+            value.type = ValueType::BOOL;
+        }
+        else if (type == "string") {
+            value.data = "";
+            value.type = ValueType::STRING;
+        }
+        else {
+            value.data = 0;
+            value.type = ValueType::VOID;
+        }
+    }
 };
 
 class SymTable {
@@ -40,6 +62,8 @@ public:
     void addVar(const string& type, const string& name);
     void addFunction(const string& type,const string& name,const vector<pair<string,string>>& params = {});
     void addClass(const string& name);
+
+    void updateVar(const string& name, const Value& val);
 
     bool existsVar(const string& name) const;
     bool existsFunction(const string& name) const;
@@ -60,6 +84,8 @@ public:
     SymTable* getClassScope(const string& className);
     SymTable* getFunctionScope(const string& funcName);
 
-    SymTable* getParent() const { return parent; }
-};
+    const map<string, IdInfo>& getVariables() const;
 
+    SymTable* getParent() const { return parent; }
+    void copyVariablesFrom(const SymTable* source);
+};

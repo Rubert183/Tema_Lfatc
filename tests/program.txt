@@ -1,0 +1,26 @@
+int a1,b1;
+float c;
+int cmmdc(int a,int b){
+    int r;
+    while(b!=0){
+        r:=a%b;
+        a:=b;
+        b:=r;
+    }
+    return a;
+}
+
+class MyClass{
+    int a,
+    int b,
+    float rez(){
+        return 3.14;
+    }
+};
+MyClass c1;
+main {
+    a1:=31;
+    b1:=3;
+    c:=c1.rez();
+    Print(cmmdc(a1,b1));
+}

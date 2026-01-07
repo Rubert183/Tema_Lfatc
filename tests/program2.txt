@@ -1,0 +1,21 @@
+int f(int v) {
+    return v + 3;
+}
+
+int d(int g) {
+    return g + f(g);
+}
+
+int recursiva(int v) {
+    if (v > 1)
+    {
+        return v + recursiva(v - 1);
+    }
+    else {
+        return 1;
+    }
+}
+main {
+    Print(d(3));
+    Print(recursiva(4));
+}

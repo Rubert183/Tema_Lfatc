@@ -25,6 +25,17 @@ void SymTable::addClass(const string& name) {
     classes[name] = cls;
 }
 
+void SymTable::updateVar(const string& name, const Value& value) {
+    // If variable exists in current scope, update it
+    if (variables.count(name)) {
+        variables[name].value = value;
+    } 
+    // Otherwise, try to update in parent scope
+    else if (parent) {
+        parent->updateVar(name, value);
+    }
+}
+
 bool SymTable::existsVar(const string& name) const {
     if (variables.count(name))
         return true;
@@ -115,4 +126,13 @@ SymTable* SymTable::getFunctionScope(const string& funcName) {
     if (it != functions.end())
         return it->second.function_scope;
     return parent ? parent->getFunctionScope(funcName) : nullptr;
+}
+
+const map<string, IdInfo>& SymTable::getVariables() const {
+    return variables;
+}
+
+void SymTable::copyVariablesFrom(const SymTable* source) {
+    if (!source) return;
+    this->variables = source->variables;
 }
