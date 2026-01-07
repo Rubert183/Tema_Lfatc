@@ -205,34 +205,46 @@ public:
         if (object) object->setDefinitionsList(defs);
     }
     
-    string getFieldName() const { return field_name; }
-    ASTNode* getObjectNode() const { return object; }
-
+    
     Value eval(SymTable& sym) override {
-        ASTId* obj_id = dynamic_cast<ASTId*>(object);
-        if (!obj_id) return Value(); 
+        // 1. Evaluam obiectul (poate fi un ID sau un apel de functie)
+        Value val = object->eval(sym);
 
-        string instance_name = obj_id->get_name();
-        IdInfo* obj_var = sym.getVar(instance_name);
-        if (!obj_var) return Value();
+        // 2. Verificam daca rezultatul este o referinta catre un obiect
+        if (val.type != ValueType::OBJECT) {
+            // Eroare de runtime sau return default
+            return Value();
+        }
 
-        // 1. Try fetching from Heap (Specific instance value)
+        // 3. Extragem numele instantei (cheia din Heap)
+        string instance_name = get<string>(val.data);
+
+        // 4. Cautam in Heap
         if (InstanceManager::hasField(instance_name, field_name)) {
             return InstanceManager::getField(instance_name, field_name);
         }
 
-        // 2. Lazy Load: If not in heap, fetch default from Class Definition
-        string class_name = obj_var->type;
-        IdInfo* class_info = sym.getClass(class_name);
-        if (class_info && class_info->class_scope) {
-             IdInfo* default_field = class_info->class_scope->getVar(field_name);
-             if (default_field) {
-                 InstanceManager::setField(instance_name, field_name, default_field->value);
-                 return default_field->value;
-             }
+        // 5. Lazy Load (Default values din definitia clasei)
+        // Avem nevoie sa stim tipul clasei. Din pacate, Value stocheaza doar numele instantei.
+        // Putem deduce tipul cautand instanta in SymTable curent sau parinti.
+        IdInfo* varInfo = sym.getVar(instance_name);
+        if (varInfo) {
+            string class_name = varInfo->type;
+            IdInfo* class_info = sym.getClass(class_name);
+            if (class_info && class_info->class_scope) {
+                IdInfo* default_field = class_info->class_scope->getVar(field_name);
+                if (default_field) {
+                    InstanceManager::setField(instance_name, field_name, default_field->value);
+                    return default_field->value;
+                }
+            }
         }
+        
         return Value();
     }
+
+    string getFieldName() const { return field_name; }
+    ASTNode* getObjectNode() const { return object; }
 };
 
 class ASTAssign : public ASTNode {
@@ -249,19 +261,25 @@ public:
     Value eval(SymTable& sym) override {
         Value expr_val = expr->eval(sym);
 
-        // Simple Variable Assignment
+        // Cazul 1: Asignare simpla (x = y sau x = func())
         ASTId* id_node = dynamic_cast<ASTId*>(target);
         if (id_node) {
             sym.updateVar(id_node->get_name(), expr_val);
             return expr_val;
         }
 
-        // Object Field Assignment (Updates Heap)
+        // Cazul 2: Asignare la camp (obj.field = val)
         ASTFieldAccess* field_node = dynamic_cast<ASTFieldAccess*>(target);
         if (field_node) {
-            ASTId* obj_id = dynamic_cast<ASTId*>(field_node->getObjectNode());
-            if (obj_id) {
-                InstanceManager::setField(obj_id->get_name(), field_node->getFieldName(), expr_val);
+            // Evaluam obiectul din stanga punctului pentru a afla instanta
+            Value objRef = field_node->getObjectNode()->eval(sym);
+            
+            if (objRef.type == ValueType::OBJECT) {
+                string instance_name = get<string>(objRef.data);
+                string field_name = field_node->getFieldName();
+                
+                // Actualizam Heap-ul
+                InstanceManager::setField(instance_name, field_name, expr_val);
                 return expr_val;
             }
         }

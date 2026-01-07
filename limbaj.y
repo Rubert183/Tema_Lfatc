@@ -316,7 +316,7 @@ field : type_or_class ID {
             cout << "Field " << fieldName << " has the name of a class at line " << yylineno << endl;
             errorCount++;
         } else if(current->existsFunction_current(fieldName)){
-            cout << "Field " << fieldName << " has the name of a function at line " << yylineno << endl;
+            cout << "Field " << fieldName << " has the name of a method at line " << yylineno << endl;
             errorCount++;
         } else if(current->existsVar_current(fieldName)){
             cout << "Redeclared field " << fieldName << " at line " << yylineno << endl;
@@ -333,7 +333,7 @@ method : type_or_class ID {
         cout << "Method " << methodName << " has the name of a class at line " << yylineno << endl;
         errorCount++;
     } else if(current->existsVar_current(methodName)){
-        cout << "Method " << methodName << " has the name of a variable at line " << yylineno << endl;
+        cout << "Method " << methodName << " has the name of a field at line " << yylineno << endl;
         errorCount++;
     } else if(current->existsFunction_current(methodName)){
         cout << "Redeclared method " << methodName << " at line " << yylineno << endl;

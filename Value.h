@@ -10,6 +10,7 @@ enum class ValueType {
     FLOAT,
     BOOL,
     STRING,
+    OBJECT,
     VOID // folosit numai ca default value in constructor
 };
 
@@ -44,7 +45,12 @@ public:
         new_val.data = v;
         return new_val;
     }
-
+    static Value makeObject(string instanceName) {
+        Value new_val;
+        new_val.type = ValueType::OBJECT;
+        new_val.data = instanceName; 
+        return new_val;
+    }
     void print() {
         switch (type) {
             case ValueType::INT:

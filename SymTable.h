@@ -40,9 +40,14 @@ public:
             value.data = "";
             value.type = ValueType::STRING;
         }
+        else if (type.length()>0) {
+            value = Value::makeObject(name);
+        }
         else {
             value.data = 0;
             value.type = ValueType::VOID;
+
+            
         }
     }
 };
