@@ -17,6 +17,7 @@ class MyClass{
         return 3.14;
     }
 };
+
 MyClass c1;
 main {
     a1:=31;
