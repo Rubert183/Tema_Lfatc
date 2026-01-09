@@ -1,0 +1,18 @@
+int a, b;
+float c;
+bool d;
+
+main {
+    a := 10;
+    b := 5;
+    c := 2.5;
+    
+    Print(a + b);
+    Print(a * b);
+    Print(a / b);
+    
+    d := true;
+    if (d) {
+        Print(c * 2.0);
+    }
+}

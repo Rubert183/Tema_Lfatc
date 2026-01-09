@@ -3,12 +3,14 @@ class MyClass{
     float b,
     float get_PI(){return 3.14;}
 };
+
 MyClass new_MyClass(int a,float b){
     MyClass m_local;
     m_local.a:=a;
     m_local.b:=b;
-    
+    return m_local;
 }
+
 MyClass m;
 main{
     m:=new_MyClass(1,4.12);

@@ -1,0 +1,25 @@
+class Rectangle {
+    int width,
+    int height,
+    
+    int getArea() {
+        return width * height;
+    },
+    
+    
+    int setDims(int w, int h) {
+        width := w;
+        height := h;
+        return 1;
+    }
+};
+
+Rectangle r;
+
+main {
+    r.setDims(10, 20);
+    Print(r.getArea());
+    
+    r.width := 5;
+    Print(r.getArea());
+}

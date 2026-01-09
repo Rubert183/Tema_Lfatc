@@ -416,10 +416,18 @@ print_statement : PRINT '(' expression ')' ';' {
 
 if_else_st : IF '(' expression ')' '{' code_block_no_definitions '}' ELSE '{' code_block_no_definitions '}' {
             if ($3 && $3->ast && $6 && $10) {
-                ASTNode* cond = $3->ast;
-                vector<ASTNode*> if_body = *$6;
-                vector<ASTNode*> else_body = *$10;
-                $$ = new ASTIf(cond, if_body, else_body);
+                if(*$3->type!="bool"){
+                    cout << "The condition of the if at line "<< yylineno << " needs to be a boolean expression"<<endl;
+                    $$ = new ASTNull();
+                    errorCount++;
+                }
+                else{
+                    ASTNode* cond = $3->ast;
+                    vector<ASTNode*> if_body = *$6;
+                    vector<ASTNode*> else_body = *$10;
+                    $$ = new ASTIf(cond, if_body, else_body);
+                }
+                
             } else {
                 $$ = new ASTNull();
             }
@@ -428,9 +436,17 @@ if_else_st : IF '(' expression ')' '{' code_block_no_definitions '}' ELSE '{' co
 
 if_st : IF '(' expression ')' '{' code_block_no_definitions '}' {
             if ($3 && $3->ast && $6) {
-                ASTNode* cond = $3->ast;
-                vector<ASTNode*> body = *$6;
-                $$ = new ASTIf(cond, body);
+                if(*$3->type!="bool"){
+                    cout << "The condition of the if at line "<< yylineno << " needs to be a boolean expression"<<endl;
+                    $$ = new ASTNull();
+                    errorCount++;
+                }
+                else{
+                    ASTNode* cond = $3->ast;
+                    vector<ASTNode*> body = *$6;
+                    $$ = new ASTIf(cond, body);
+                }
+                
             } else {
                 $$ = new ASTNull();
             }
@@ -448,9 +464,16 @@ call_statement : call ';' {
 
 while_loop : WHILE '(' expression ')' '{' code_block_no_definitions '}' {
             if ($3 && $3->ast && $6) {
-                ASTNode* cond = $3->ast;
-                vector<ASTNode*> body = *$6;
-                $$ = new ASTWhile(cond, body);
+                if(*$3->type!="bool"){
+                    cout << "The condition of the while at line "<< yylineno << " needs to be a boolean expression"<<endl;
+                    $$ = new ASTNull();
+                    errorCount++;
+                }
+                else{
+                    ASTNode* cond = $3->ast;
+                    vector<ASTNode*> body = *$6;
+                    $$ = new ASTWhile(cond, body);
+                }
             } else {
                 $$ = new ASTNull();
             }
@@ -548,6 +571,16 @@ expression
             if ($1->ast && $3->ast) $$->ast = new ASTBinaryOp("%", $1->ast, $3->ast);
         } else {
             cout << "Invalid mod op" << endl; errorCount++; $$=makeExpr("");
+        }
+    }
+    | '-' expression %prec NOT { 
+        if (*$2->type == "int" || *$2->type == "float") {
+            $$ = makeExpr(*$2->type);
+            if ($2->ast) $$->ast = new ASTUnaryOp("-", $2->ast);
+        } else {
+             cout << "Type mismatch for unary minus at line " << yylineno << endl;
+             errorCount++;
+             $$ = makeExpr("");
         }
     }
     | expression OR expression {
