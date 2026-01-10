@@ -125,6 +125,7 @@ progr : top_level main {
                                 instr->eval(*global_scope);
                             } catch (const std::exception& e) {
                                 cout << "Runtime error: " << e.what() << endl;
+                                exit(1);
                             }
                         }
                     }
@@ -737,39 +738,75 @@ class_element
             }
         }
     | class_element '.' ID {
-    SymTable* classScope = nullptr;
-    IdInfo* typeInfo = current->getClass(*$1->type);
-    if(!typeInfo){
-        cout << "Type " << *$1->type << " is not a class at line " << yylineno << endl;
-        errorCount++;
-        $$ = makeExpr("");
-        $$->ast = new ASTOther();
-    } else {
-        classScope = typeInfo->class_scope;
-        if(!classScope){
-            cout << "Class scope error" << endl; errorCount++;
-            $$ = makeExpr(""); $$->ast = new ASTOther();
+        SymTable* classScope = nullptr;
+        IdInfo* typeInfo = current->getClass(*$1->type);
+        if(!typeInfo){
+            cout << "Type " << *$1->type << " is not a class at line " << yylineno << endl;
+            errorCount++;
+            $$ = makeExpr("");
+            $$->ast = new ASTOther();
         } else {
-            IdInfo* field = classScope->getVar_current(*$3);
-            if(field){
-                $$ = makeExpr(field->type);
-                if ($1->ast) $$->ast = new ASTFieldAccess($1->ast, *$3);
-                else $$->ast = new ASTOther();
+            classScope = typeInfo->class_scope;
+            if(!classScope){
+                cout << "Class scope error" << endl; errorCount++;
+                $$ = makeExpr(""); $$->ast = new ASTOther();
             } else {
-                IdInfo* method = classScope->getFunction(*$3);
-                if(method){
-                    $$ = makeExpr(method->type);
-                    $$->cur_scope = classScope;
-                    $$->ast = new ASTOther();
+                IdInfo* field = classScope->getVar_current(*$3);
+                if(field){
+                    $$ = makeExpr(field->type);
+                    if ($1->ast) $$->ast = new ASTFieldAccess($1->ast, *$3);
+                    else $$->ast = new ASTOther();
                 } else {
-                    cout << "Undefined class element " << *$3 << endl; errorCount++;
-                    $$ = makeExpr(""); $$->ast = new ASTOther();
+                    IdInfo* method = classScope->getFunction(*$3);
+                    if(method){
+                        $$ = makeExpr(method->type);
+                        $$->cur_scope = classScope;
+                        $$->ast = new ASTOther();
+                    } else {
+                        cout << "Undefined class element " << *$3 << endl;
+                        errorCount++;
+                        $$ = makeExpr(""); $$->ast = new ASTOther();
+                    }
                 }
             }
         }
     }
-}
-;
+    | call '.' ID {
+        SymTable* classScope = nullptr;
+        IdInfo* typeInfo = current->getClass(*$1->type);
+        
+        if(!typeInfo){
+            cout << "Type " << *$1->type << " returned by function is not a class at line " << yylineno << endl;
+            errorCount++;
+            $$ = makeExpr("");
+            $$->ast = new ASTOther();
+        } else {
+            classScope = typeInfo->class_scope;
+            if(!classScope){
+                cout << "Class scope error" << endl; errorCount++;
+                $$ = makeExpr(""); $$->ast = new ASTOther();
+            } else {
+                IdInfo* field = classScope->getVar_current(*$3);
+                if(field){
+                    $$ = makeExpr(field->type);
+                    if ($1->ast) $$->ast = new ASTFieldAccess($1->ast, *$3);
+                    else $$->ast = new ASTOther();
+                } else {
+                    IdInfo* method = classScope->getFunction(*$3);
+                    if(method){
+                        $$ = makeExpr(method->type);
+                        $$->cur_scope = classScope; 
+                        $$->ast = new ASTOther();
+                    } else {
+                        cout << "Undefined field " << *$3 << " in class returned by function" << endl;
+                        errorCount++;
+                        $$ = makeExpr(""); $$->ast = new ASTOther();
+                    }
+                }
+            }
+        }
+    }
+    ;
 
 %%
 void yyerror(const char * s){

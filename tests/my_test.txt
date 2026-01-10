@@ -1,18 +1,29 @@
+class PI{
+    int a,
+    float get_PI(){
+        return 3.14;
+    }
+};
+
 class MyClass{
     int a,
     float b,
-    float get_PI(){return 3.14;}
+    PI p
 };
 
 MyClass new_MyClass(int a,float b){
     MyClass m_local;
     m_local.a:=a;
     m_local.b:=b;
+    m_local.p.a:=10;
     return m_local;
 }
 
 MyClass m;
 main{
     m:=new_MyClass(1,4.12);
-    Print(m.b);
+    Print(m.a);
+    Print(new_MyClass(1,32.62).b);
+    Print(m.p.get_PI());
+    Print(m.p.a);
 }
