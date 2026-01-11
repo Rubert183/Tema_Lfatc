@@ -1,0 +1,25 @@
+int x;
+
+class Shadow {
+    int x,
+    
+    int test(int x) {
+        Print(x);
+        x := x + 1;
+        return x;
+    },
+    
+    int getField() {
+        return x;
+    }
+};
+
+Shadow s;
+
+main {
+    x := 100;
+    s.x := 50;
+    Print(x);         
+    Print(s.test(10)); 
+    Print(s.getField()); 
+}

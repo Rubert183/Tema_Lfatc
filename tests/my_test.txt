@@ -20,10 +20,13 @@ MyClass new_MyClass(int a,float b){
 }
 
 MyClass m;
+PI p;
+float f;
 main{
+    f:=m.p.get_PI();
     m:=new_MyClass(1,4.12);
     Print(m.a);
     Print(new_MyClass(1,32.62).b);
-    Print(m.p.get_PI());
+    Print(f);
     Print(m.p.a);
 }

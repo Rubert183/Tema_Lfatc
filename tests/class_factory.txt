@@ -1,0 +1,24 @@
+class Calculator {
+    int val,
+    
+    int add(int v) {
+        val := val + v;
+        return val;
+    },
+    
+    int getValue() {
+        return val;
+    }
+};
+
+Calculator createCalc(int startVal) {
+    Calculator c;
+    c.val := startVal;
+    return c;
+}
+
+main {
+    Print(createCalc(15).add(7));
+    Print(createCalc(10).val);   
+    Print(createCalc(15).add(5));
+}

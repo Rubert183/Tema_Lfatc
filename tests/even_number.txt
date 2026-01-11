@@ -1,0 +1,20 @@
+int isEven(int n) {
+    if (n%2 == 0) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int isOdd(int n) {
+    if (n%2==0) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+main {
+    if (isEven(10)==1) { Print(1); } else { Print(0); }
+    if (isOdd(10)==1)  { Print(1); } else { Print(0); }
+}

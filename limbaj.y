@@ -597,27 +597,27 @@ expression
         if ($2->ast) $$->ast = new ASTUnaryOp("not", $2->ast);
     }
     | expression LT expression {
-        if(*$1->type != *$3->type) { errorCount++; $$=makeExpr(""); }
+        if(*$1->type != *$3->type) { cout << "Type mismatch for operator '<' at line " << yylineno << endl; errorCount++; $$=makeExpr(""); }
         else { $$=makeExpr("bool"); if($1->ast && $3->ast) $$->ast = new ASTBinaryOp("<", $1->ast, $3->ast); }
     }
     | expression GT expression {
-        if(*$1->type != *$3->type) { errorCount++; $$=makeExpr(""); }
+        if(*$1->type != *$3->type) { cout << "Type mismatch for operator '>' at line " << yylineno << endl; errorCount++; $$=makeExpr(""); }
         else { $$=makeExpr("bool"); if($1->ast && $3->ast) $$->ast = new ASTBinaryOp(">", $1->ast, $3->ast); }
     }
     | expression LE expression {
-        if(*$1->type != *$3->type) { errorCount++; $$=makeExpr(""); }
+        if(*$1->type != *$3->type) { cout << "Type mismatch for operator '<=' at line " << yylineno << endl;errorCount++; $$=makeExpr(""); }
         else { $$=makeExpr("bool"); if($1->ast && $3->ast) $$->ast = new ASTBinaryOp("<=", $1->ast, $3->ast); }
     }
     | expression GE expression {
-        if(*$1->type != *$3->type) { errorCount++; $$=makeExpr(""); }
+        if(*$1->type != *$3->type) { cout << "Type mismatch for operator '>=' at line " << yylineno << endl;errorCount++; $$=makeExpr(""); }
         else { $$=makeExpr("bool"); if($1->ast && $3->ast) $$->ast = new ASTBinaryOp(">=", $1->ast, $3->ast); }
     }
     | expression EQ expression {
-        if(*$1->type != *$3->type) { errorCount++; $$=makeExpr(""); }
+        if(*$1->type != *$3->type) { cout << "Type mismatch for operator '==' at line " << yylineno << endl;errorCount++; $$=makeExpr(""); }
         else { $$=makeExpr("bool"); if($1->ast && $3->ast) $$->ast = new ASTBinaryOp("==", $1->ast, $3->ast); }
     }
     | expression NEQ expression {
-        if(*$1->type != *$3->type) { errorCount++; $$=makeExpr(""); }
+        if(*$1->type != *$3->type) { cout << "Type mismatch for operator '!=' at line " << yylineno << endl; errorCount++; $$=makeExpr(""); }
         else { $$=makeExpr("bool"); if($1->ast && $3->ast) $$->ast = new ASTBinaryOp("!=", $1->ast, $3->ast); }
     }
     | call { $$ = $1; }
@@ -716,6 +716,55 @@ call : ID '(' call_params ')' {
                 expr_result = makeExpr(m->type);
                 if ($1->ast && asts) expr_result->ast = new ASTMethodCall($1->ast, *$3, *asts);
                 else expr_result->ast = new ASTOther();
+            }
+        }
+    }
+    $$ = expr_result;
+}
+| call '.' ID '(' call_params ')' {
+    // 1. Verificam daca rezultatul apelului anterior ($1) este o clasa
+    IdInfo* typeInfo = current->getClass(*$1->type);
+    Expr* expr_result = nullptr;
+
+    if(!typeInfo){
+        cout << "Type " << *$1->type << " returned by function is not a class at line " << yylineno << endl;
+        errorCount++;
+        expr_result = makeExpr("");
+        expr_result->ast = new ASTOther();
+    } else {
+        SymTable* classScope = typeInfo->class_scope;
+        // 2. Cautam metoda in scope-ul clasei returnate
+        IdInfo* m = classScope->getFunction(*$3);
+        
+        if(!m){
+            cout << "Undefined method " << *$3 << " in class " << *$1->type << endl;
+            errorCount++;
+            expr_result = makeExpr("");
+            expr_result->ast = new ASTOther();
+        } else {
+            vector<string>* types = $5->types;
+            vector<ASTNode*>* asts = $5->asts;
+            
+            // 3. Validam parametrii
+            if(m->params.size() != types->size()){
+                cout << "Wrong number of params for method " << *$3 << endl;
+                errorCount++;
+                expr_result = makeExpr(""); 
+                expr_result->ast = new ASTOther();
+            } else {
+                 for(size_t i = 0; i < types->size(); i++){
+                    if(m->params[i].first != (*types)[i]){
+                        cout << "Type mismatch param " << i+1 << " in method " << *$3 << endl;
+                        errorCount++;
+                    }
+                }
+                // 4. Succes! Cream ASTMethodCall
+                expr_result = makeExpr(m->type);
+                // Obiectul pe care apelam metoda este AST-ul apelului anterior ($1->ast)
+                if ($1->ast && asts) 
+                    expr_result->ast = new ASTMethodCall($1->ast, *$3, *asts);
+                else 
+                    expr_result->ast = new ASTOther();
             }
         }
     }

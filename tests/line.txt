@@ -1,0 +1,32 @@
+class Point {
+    int x,
+    int y
+};
+
+class Line {
+    Point p1,
+    Point p2,
+    
+    int getLengthSquared() {
+        int dx; 
+        int dy;
+        dx := p2.x - p1.x;
+        dy := p2.y - p1.y;
+        return (dx * dx) + (dy * dy);
+    }
+};
+
+Line l;
+
+main {
+    l.p1.x := 0;
+    l.p1.y := 0;
+    
+    l.p2.x := 3;
+    l.p2.y := 4;
+    
+    Print(l.p1.x);
+    Print(l.p2.y);
+    
+    Print(l.getLengthSquared());
+}

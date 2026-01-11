@@ -586,73 +586,44 @@ public:
                 arg->setDefinitionsList(defs);
     }
 
+    // În clasa ASTFunctionCall din Ast.h
+
     Value eval(SymTable &sym) override
     {
-        if (!definitions_list)
-            return Value();
+        if (!definitions_list) return Value();
 
-        // 1. Căutăm informația despre funcție în tabela de simboluri curentă.
-        // Aceasta ne spune CARE 'f' este vizibilă aici (cea globală sau metoda).
         IdInfo *func_info = sym.getFunction(function_name);
-
-        if (!func_info || !func_info->function_scope)
-        {
-            // Funcția nu există în scope-ul curent
-            return Value();
-        }
+        if (!func_info || !func_info->function_scope) return Value();
 
         ASTFunctionDef *func_def = nullptr;
-
-        // 2. Căutăm definiția AST care corespunde EXACT acestui scope.
-        // Nu ne bazăm doar pe nume, ci pe identitatea pointerului de scope.
-
-        for (ASTNode *def : *definitions_list)
-        {
-            // Cazul A: Verificăm dacă e o funcție globală definită
+        // ... (Logica de cautare a definitiei ramane la fel ca inainte) ...
+        for (ASTNode *def : *definitions_list) {
             ASTFunctionDef *fd = dynamic_cast<ASTFunctionDef *>(def);
-            if (fd && fd->getName() == function_name)
-            {
-                // Verificăm identitatea: este aceasta funcția la care se referă SymTable?
-                if (fd->getScope() == func_info->function_scope)
-                {
-                    func_def = fd;
-                    break;
+            if (fd && fd->getName() == function_name) {
+                if (fd->getScope() == func_info->function_scope) {
+                    func_def = fd; break;
                 }
             }
-
-            // Cazul B: Verificăm dacă e o metodă într-o clasă
             ASTClassDef *cd = dynamic_cast<ASTClassDef *>(def);
-            if (cd)
-            {
-                // Verificăm dacă scope-ul funcției găsite are ca părinte scope-ul acestei clase
-                // (Asta înseamnă că funcția aparține acestei clase)
-                if (func_info->function_scope->getParent() == cd->getScope())
-                {
-                    // Încercăm să obținem metoda din clasă
+            if (cd) {
+                if (func_info->function_scope->getParent() == cd->getScope()) {
                     ASTFunctionDef *potential_method = cd->getMethod(function_name);
-                    if (potential_method && potential_method->getScope() == func_info->function_scope)
-                    {
-                        func_def = potential_method;
-                        break;
+                    if (potential_method && potential_method->getScope() == func_info->function_scope) {
+                        func_def = potential_method; break;
                     }
                 }
             }
         }
 
-        if (!func_def)
-            return Value();
+        if (!func_def) return Value();
 
-        // --- STACK FRAME CREATION ---
-        // Creăm un nou scope de execuție bazat pe scope-ul static al funcției găsite
         SymTable *static_scope = func_info->function_scope;
         SymTable runtime_scope("call_frame", static_scope->getParent());
         runtime_scope.copyVariablesFrom(static_scope);
 
-        if (func_info->params.size() != arguments.size())
-            return Value();
+        if (func_info->params.size() != arguments.size()) return Value();
 
-        for (size_t i = 0; i < arguments.size(); i++)
-        {
+        for (size_t i = 0; i < arguments.size(); i++) {
             Value arg_val = arguments[i]->eval(sym);
             runtime_scope.updateVar(func_info->params[i].second, arg_val);
         }
@@ -660,16 +631,43 @@ public:
         Value result;
         try
         {
-            for (auto *stmt : func_def->getBody())
-            {
-                if (stmt)
-                    result = stmt->eval(runtime_scope);
+            for (auto *stmt : func_def->getBody()) {
+                if (stmt) result = stmt->eval(runtime_scope);
             }
         }
         catch (const ReturnException &e)
         {
-            return e.value;
+            result = e.value;
         }
+
+        // --- FIX-UL ESTE AICI ---
+        // Daca functia returneaza un OBIECT, trebuie sa-l salvam intr-o variabila temporara
+        // in scope-ul curent (al apelantului), altfel pierdem referinta la tipul clasei.
+        
+        if (result.type == ValueType::OBJECT) {
+            // Verificam daca tipul returnat de functie este o clasa
+            if (sym.existsClass(func_info->type)) {
+                string local_name = get<string>(result.data);
+                
+                // Generam un nume unic temporar (ex: "__temp_Calculator_1")
+                static int temp_count = 0;
+                string temp_name = "__temp_" + func_info->type + "_" + to_string(temp_count++);
+
+                // 1. Inregistram variabila temporara in scope-ul apelantului (main)
+                // Astfel, apelurile ulterioare (ex: .add) vor gasi variabila si tipul ei corect.
+                sym.addVar(func_info->type, temp_name);
+
+                // 2. Copiem datele din Heap (InstanceManager)
+                // Mutam datele de la instanta locala ("c") la cea temporara
+                if (InstanceManager::memory.count(local_name)) {
+                    InstanceManager::memory[temp_name] = InstanceManager::memory[local_name];
+                }
+
+                // Returnam numele obiectului temporar
+                return Value::makeObject(temp_name);
+            }
+        }
+        // -------------------------
 
         return result;
     }
@@ -703,6 +701,14 @@ public:
         {
             for (auto const &[name, info] : class_scope->getVariables())
             {
+                // FIX: Verificăm dacă variabila este declarată local în metodă (Shadowing).
+                // Dacă existsVar_current returnează true, înseamnă că avem un parametru 
+                // sau o variabilă locală cu același nume. În acest caz, NU vrem să 
+                // suprascriem câmpul obiectului cu valoarea locală.
+                if (method_scope->existsVar_current(name)) {
+                    continue; 
+                }
+
                 IdInfo *val_in_method = method_scope->getVar(name);
                 if (val_in_method)
                 {
@@ -717,10 +723,15 @@ public:
         if (!definitions_list)
             return Value();
 
-        ASTId *obj_id = dynamic_cast<ASTId *>(object);
-        if (!obj_id)
+        // 1. Evaluam nodul 'object'. Poate fi m (ASTId), m.p (ASTFieldAccess) sau f() (ASTFunctionCall)
+        Value obj_val = object->eval(sym);
+
+        // 2. Verificam daca rezultatul evaluarii este un obiect
+        if (obj_val.type != ValueType::OBJECT)
             return Value();
-        string instance_name = obj_id->get_name();
+
+        // 3. Extragem numele instantei din Value
+        string instance_name = get<string>(obj_val.data);
 
         IdInfo *obj_var = sym.getVar(instance_name);
         if (!obj_var)
