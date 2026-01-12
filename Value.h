@@ -65,8 +65,27 @@ public:
             case ValueType::STRING:
                 cout << get<std::string>(data) << endl;
                 break;
+            case ValueType::VOID:
+                cout<<"Can't print VOID expresions"<<endl;
             default:
+                cout<<"Can't print objects of type "<< get<std::string>(data) <<" since deserialization for this type is not implemented"<<endl;
                 break;
+        }
+    }
+    string toString() const {
+        switch (type) {
+            case ValueType::INT:
+                return to_string(get<int>(data));
+            case ValueType::FLOAT:
+                return to_string(get<float>(data));
+            case ValueType::BOOL:
+                return get<bool>(data) ? "true" : "false";
+            case ValueType::STRING:
+                return "\"" + get<std::string>(data) + "\"";
+            case ValueType::OBJECT:
+                return "Object(" + get<std::string>(data) + ")"; 
+            default:
+                return "void";
         }
     }
 };

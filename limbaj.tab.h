@@ -99,7 +99,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 44 "limbaj.y"
+#line 39 "limbaj.y"
 
     int intVal;
     float floatVal;
@@ -108,10 +108,9 @@ union YYSTYPE
     std::vector<ASTNode*>* ast_list;
     Expr *expr;
     ASTNode* ast;
-    ProgramLists* program_lists;
     CallParams* call_params;
 
-#line 115 "limbaj.tab.h"
+#line 114 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

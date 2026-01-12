@@ -20,11 +20,6 @@
 
 using namespace std;
 
-struct ProgramLists {
-    vector<ASTNode*>* definitions;
-    vector<ASTNode*>* main_instrs;
-};
-
 struct CallParams {
     vector<string>* types;
     vector<ASTNode*>* asts;
@@ -49,7 +44,6 @@ int errorCount = 0;
     std::vector<ASTNode*>* ast_list;
     Expr *expr;
     ASTNode* ast;
-    ProgramLists* program_lists;
     CallParams* call_params;
 }
 
@@ -72,7 +66,7 @@ int errorCount = 0;
 %type <ast_list> top_level
 %type <ast> top_level_decl
 %type <ast_list> main
-%type <program_lists> progr
+
 %type <call_params> call_params
 %type <ast_list> func_body
 %type <ast_list> method_body
@@ -131,9 +125,6 @@ progr : top_level main {
                     }
                 }
             }
-            $$ = new ProgramLists();
-            $$->definitions = $1;
-            $$->main_instrs = $2;
         }
       ;
 
@@ -207,10 +198,13 @@ func: type_or_class ID {
                         cout << "Redeclared function " << *$2 << " at line " << yylineno << endl;
                         errorCount++;
              } else {
-                        current->addFunction(currentType, *$2);
+                        /*current->addFunction(currentType, *$2);
                         SymTable* funcScope = new SymTable(*$2, current);
                         currentIdInfo=current->getFunction(*$2);
                         currentIdInfo->function_scope = funcScope;
+                        current = current->getFunctionScope(*$2);*/
+                        current->addFunction(currentType, *$2);
+                        currentIdInfo = current->getFunction(*$2);
                         current = current->getFunctionScope(*$2);
              }
          } '(' opt_param_list ')' '{' func_body '}' {
@@ -265,10 +259,12 @@ class : CLASS_MK ID {
             cout << "Redeclared class " << className << " at line " << yylineno << endl;
             errorCount++;
         } else {
-            current->addClass(className);
+            /*current->addClass(className);
             SymTable* classScope = new SymTable(className, current);
             current->getClass(className)->class_scope = classScope;
-            current = classScope;
+            current = classScope;*/
+            current->addClass(className);
+            current = current->getClassScope(className);
         }
       } '{' class_list '}' ';' {
             string className = *$2;
@@ -340,11 +336,14 @@ method : type_or_class ID {
         cout << "Redeclared method " << methodName << " at line " << yylineno << endl;
         errorCount++;
     } else {
-        current->addFunction(currentType, methodName);
+        /*current->addFunction(currentType, methodName);
         SymTable* methodScope = new SymTable(methodName, current);
         currentIdInfo = current->getFunction(methodName);
         currentIdInfo->function_scope = methodScope;
-        current = methodScope;
+        current = methodScope;*/
+        current->addFunction(currentType, methodName);
+        currentIdInfo = current->getFunction(methodName);
+        current = current->getFunctionScope(methodName);
     }
     } '(' opt_param_list ')' '{' method_body '}' {
         string methodName = *$2;
@@ -390,7 +389,6 @@ code_block_no_definitions : {
         ;
 
 return_statement : return_val ';' { $$ = $1; }
-                 | return_nothing ';' { $$ = new ASTReturn(); }
                  ;
 
 code_block : {
@@ -410,7 +408,7 @@ print_statement : PRINT '(' expression ')' ';' {
             if ($3 && $3->ast) {
                 $$ = new ASTPrint($3->ast);
             } else {
-                $$ = new ASTNull();
+                $$ = new ASTOther();
             }
         }
         ;
@@ -419,7 +417,7 @@ if_else_st : IF '(' expression ')' '{' code_block_no_definitions '}' ELSE '{' co
             if ($3 && $3->ast && $6 && $10) {
                 if(*$3->type!="bool"){
                     cout << "The condition of the if at line "<< yylineno << " needs to be a boolean expression"<<endl;
-                    $$ = new ASTNull();
+                    $$ = new ASTOther();
                     errorCount++;
                 }
                 else{
@@ -430,7 +428,7 @@ if_else_st : IF '(' expression ')' '{' code_block_no_definitions '}' ELSE '{' co
                 }
                 
             } else {
-                $$ = new ASTNull();
+                $$ = new ASTOther();
             }
         }
         ;
@@ -439,7 +437,7 @@ if_st : IF '(' expression ')' '{' code_block_no_definitions '}' {
             if ($3 && $3->ast && $6) {
                 if(*$3->type!="bool"){
                     cout << "The condition of the if at line "<< yylineno << " needs to be a boolean expression"<<endl;
-                    $$ = new ASTNull();
+                    $$ = new ASTOther();
                     errorCount++;
                 }
                 else{
@@ -449,7 +447,7 @@ if_st : IF '(' expression ')' '{' code_block_no_definitions '}' {
                 }
                 
             } else {
-                $$ = new ASTNull();
+                $$ = new ASTOther();
             }
         }
       ;
@@ -467,7 +465,7 @@ while_loop : WHILE '(' expression ')' '{' code_block_no_definitions '}' {
             if ($3 && $3->ast && $6) {
                 if(*$3->type!="bool"){
                     cout << "The condition of the while at line "<< yylineno << " needs to be a boolean expression"<<endl;
-                    $$ = new ASTNull();
+                    $$ = new ASTOther();
                     errorCount++;
                 }
                 else{
@@ -476,7 +474,7 @@ while_loop : WHILE '(' expression ')' '{' code_block_no_definitions '}' {
                     $$ = new ASTWhile(cond, body);
                 }
             } else {
-                $$ = new ASTNull();
+                $$ = new ASTOther();
             }
         }
            ;
@@ -498,7 +496,7 @@ assign_statement : class_element ASSIGN expression ';'
                     if ($1 && $1->ast && right_ast) {
                         $$ = new ASTAssign($1->ast, right_ast);
                     } else {
-                        $$ = new ASTNull();
+                        $$ = new ASTOther();
                     }
                  }
                  ;
@@ -511,9 +509,6 @@ return_val : RETURN expression {
             }
         }
            ;
-
-return_nothing : RETURN
-               ;
 
 var_definition : var
                ;
@@ -867,5 +862,6 @@ int main(int argc, char** argv){
      const string global="global";
      current = new SymTable(global);
      yyparse();
+     SymTable::printAllTables("tables.txt");
      delete current;
 }

@@ -618,7 +618,7 @@ public:
         if (!func_def) return Value();
 
         SymTable *static_scope = func_info->function_scope;
-        SymTable runtime_scope("call_frame", static_scope->getParent());
+        SymTable runtime_scope("call_frame", static_scope->getParent(),false);
         runtime_scope.copyVariablesFrom(static_scope);
 
         if (func_info->params.size() != arguments.size()) return Value();
@@ -632,44 +632,43 @@ public:
         try
         {
             for (auto *stmt : func_def->getBody()) {
-                if (stmt) result = stmt->eval(runtime_scope);
+                if (stmt) {
+                    // Executam instructiunea, dar NU salvam rezultatul in 'result'.
+                    // Daca instructiunea este un 'return', ea va arunca o exceptie.
+                    stmt->eval(runtime_scope); 
+                }
             }
         }
         catch (const ReturnException &e)
         {
-            result = e.value;
-        }
+            // Am prins un RETURN explicit
+            Value result = e.value;
 
-        // --- FIX-UL ESTE AICI ---
-        // Daca functia returneaza un OBIECT, trebuie sa-l salvam intr-o variabila temporara
-        // in scope-ul curent (al apelantului), altfel pierdem referinta la tipul clasei.
-        
-        if (result.type == ValueType::OBJECT) {
-            // Verificam daca tipul returnat de functie este o clasa
-            if (sym.existsClass(func_info->type)) {
-                string local_name = get<string>(result.data);
-                
-                // Generam un nume unic temporar (ex: "__temp_Calculator_1")
-                static int temp_count = 0;
-                string temp_name = "__temp_" + func_info->type + "_" + to_string(temp_count++);
+            // --- FIX PENTRU OBIECTE RETURNATE (Temp Copy) ---
+            if (result.type == ValueType::OBJECT) {
+                if (sym.existsClass(func_info->type)) {
+                    string local_name = get<string>(result.data);
+                    
+                    static int temp_count = 0;
+                    string temp_name = "__temp_" + func_info->type + "_" + to_string(temp_count++);
 
-                // 1. Inregistram variabila temporara in scope-ul apelantului (main)
-                // Astfel, apelurile ulterioare (ex: .add) vor gasi variabila si tipul ei corect.
-                sym.addVar(func_info->type, temp_name);
+                    sym.addVar(func_info->type, temp_name);
 
-                // 2. Copiem datele din Heap (InstanceManager)
-                // Mutam datele de la instanta locala ("c") la cea temporara
-                if (InstanceManager::memory.count(local_name)) {
-                    InstanceManager::memory[temp_name] = InstanceManager::memory[local_name];
+                    if (InstanceManager::memory.count(local_name)) {
+                        InstanceManager::memory[temp_name] = InstanceManager::memory[local_name];
+                    }
+
+                    return Value::makeObject(temp_name);
                 }
-
-                // Returnam numele obiectului temporar
-                return Value::makeObject(temp_name);
             }
+            
+            // Returnam valoarea primitiva (int, float, bool)
+            return result;
         }
-        // -------------------------
 
-        return result;
+        // Daca s-a terminat bucla for si nu s-a aruncat nicio exceptie,
+        // inseamna ca functia nu a dat return. Returnam VOID.
+        return Value();
     }
 };
 
@@ -695,24 +694,23 @@ public:
     }
 
     // Persist modified fields back to 'Heap' (InstanceManager)
-    void saveState(SymTable *method_scope, SymTable *class_scope, const string &instance_name)
+    // Modificam semnatura pentru a accepta un scope generic (runtime_scope)
+    void saveState(SymTable *runtime_scope, SymTable *class_scope, const string &instance_name)
     {
-        if (class_scope && method_scope)
+        if (class_scope && runtime_scope)
         {
             for (auto const &[name, info] : class_scope->getVariables())
             {
-                // FIX: Verificăm dacă variabila este declarată local în metodă (Shadowing).
-                // Dacă existsVar_current returnează true, înseamnă că avem un parametru 
-                // sau o variabilă locală cu același nume. În acest caz, NU vrem să 
-                // suprascriem câmpul obiectului cu valoarea locală.
-                if (method_scope->existsVar_current(name)) {
-                    continue; 
-                }
-
-                IdInfo *val_in_method = method_scope->getVar(name);
-                if (val_in_method)
-                {
-                    InstanceManager::setField(instance_name, name, val_in_method->value);
+                // Daca variabila exista in runtime_scope (poate fi un field modificat sau un parametru care face shadow)
+                // In logica ta, vrei sa salvezi inapoi in Heap modificarile facute asupra campurilor clasei.
+                
+                // Atentie: Aici trebuie sa distingem intre variabile locale si campuri. 
+                // Simplificare: salvam tot ce are nume comun cu clasa.
+                if (InstanceManager::hasField(instance_name, name)) {
+                    IdInfo *val_in_runtime = runtime_scope->getVar_current(name);
+                    if (val_in_runtime) {
+                         InstanceManager::setField(instance_name, name, val_in_runtime->value);
+                    }
                 }
             }
         }
@@ -720,86 +718,92 @@ public:
 
     Value eval(SymTable &sym) override
     {
-        if (!definitions_list)
-            return Value();
+        if (!definitions_list) return Value();
 
-        // 1. Evaluam nodul 'object'. Poate fi m (ASTId), m.p (ASTFieldAccess) sau f() (ASTFunctionCall)
+        // 1. Evaluam obiectul
         Value obj_val = object->eval(sym);
+        if (obj_val.type != ValueType::OBJECT) return Value();
 
-        // 2. Verificam daca rezultatul evaluarii este un obiect
-        if (obj_val.type != ValueType::OBJECT)
-            return Value();
-
-        // 3. Extragem numele instantei din Value
         string instance_name = get<string>(obj_val.data);
-
         IdInfo *obj_var = sym.getVar(instance_name);
-        if (!obj_var)
-            return Value();
+        if (!obj_var) return Value();
+        
         string class_name = obj_var->type;
 
+        // 2. Gasim definitia clasei
         ASTClassDef *class_def = nullptr;
-        for (ASTNode *def : *definitions_list)
-        {
+        for (ASTNode *def : *definitions_list) {
             ASTClassDef *cd = dynamic_cast<ASTClassDef *>(def);
-            if (cd && cd->getName() == class_name)
-            {
-                class_def = cd;
-                break;
+            if (cd && cd->getName() == class_name) {
+                class_def = cd; break;
             }
         }
-        if (!class_def)
-            return Value();
+        if (!class_def) return Value();
 
+        // 3. Gasim definitia metodei
         ASTFunctionDef *method_def = class_def->getMethod(method_name);
-        if (!method_def)
-            return Value();
+        if (!method_def) return Value();
 
-        SymTable *method_scope = method_def->getScope();
+        SymTable *static_method_scope = method_def->getScope();
         SymTable *class_scope = class_def->getScope();
 
-        // Load Instance State into Method Scope
-        if (class_scope)
-        {
-            for (auto const &[name, info] : class_scope->getVariables())
-            {
-                if (InstanceManager::hasField(instance_name, name))
-                {
-                    method_scope->updateVar(name, InstanceManager::getField(instance_name, name));
-                }
-                else
-                {
-                    method_scope->updateVar(name, info.value);
+        // --- FIX: CREAM UN RUNTIME SCOPE TEMPORAR ---
+        // false = NU il salvam in tables.txt
+        SymTable runtime_scope("method_frame", static_method_scope->getParent(), false); 
+        
+        // Copiem variabilele locale definite static (daca exista)
+        runtime_scope.copyVariablesFrom(static_method_scope);
+
+        // 4. Incarcam starea instantei (FIELDS) in runtime_scope
+        if (class_scope) {
+            for (auto const &[name, info] : class_scope->getVariables()) {
+                if (InstanceManager::hasField(instance_name, name)) {
+                    // Luam valoarea curenta din Heap
+                    runtime_scope.addVar(info.type, name);
+                    runtime_scope.updateVar(name, InstanceManager::getField(instance_name, name));
+                } else {
+                    // Luam valoarea default
+                    runtime_scope.addVar(info.type, name); // Asiguram ca exista in scope-ul local
+                    runtime_scope.updateVar(name, info.value);
                 }
             }
         }
 
+        // 5. Mapam Argumentele
         IdInfo *method_info = class_scope->getFunction(method_name);
-        if (method_info && method_info->params.size() == arguments.size())
-        {
-            for (size_t i = 0; i < arguments.size(); i++)
-            {
+        if (method_info && method_info->params.size() == arguments.size()) {
+            for (size_t i = 0; i < arguments.size(); i++) {
                 Value arg_val = arguments[i]->eval(sym);
-                method_scope->updateVar(method_info->params[i].second, arg_val);
+                // Updatam variabila in runtime_scope (ea a fost copiata din static_scope sau addVar mai sus)
+                runtime_scope.updateVar(method_info->params[i].second, arg_val);
             }
         }
 
-        Value result;
-        try
-        {
-            for (auto *stmt : method_def->getBody())
-            {
-                if (stmt)
-                    result = stmt->eval(*method_scope);
+        // 6. EXECUTIE (pe runtime_scope, nu pe method_def->scope)
+        try {
+            for (auto *stmt : method_def->getBody()) {
+                if (stmt) stmt->eval(runtime_scope);
             }
         }
-        catch (const ReturnException &e)
-        {
-            saveState(method_scope, class_scope, instance_name);
-            return e.value;
+        catch (const ReturnException &e) {
+            saveState(&runtime_scope, class_scope, instance_name);
+            
+            Value result = e.value;
+            // Logica Temp Object (Copy-Paste de la ASTFunctionCall)
+            if (result.type == ValueType::OBJECT && sym.existsClass(method_info->type)) {
+                 string local_name = get<string>(result.data);
+                 static int temp_count = 0;
+                 string temp_name = "__temp_" + method_info->type + "_" + to_string(temp_count++);
+                 sym.addVar(method_info->type, temp_name);
+                 if (InstanceManager::memory.count(local_name)) {
+                     InstanceManager::memory[temp_name] = InstanceManager::memory[local_name];
+                 }
+                 return Value::makeObject(temp_name);
+            }
+            return result;
         }
 
-        saveState(method_scope, class_scope, instance_name);
-        return result;
+        saveState(&runtime_scope, class_scope, instance_name);
+        return Value();
     }
 };

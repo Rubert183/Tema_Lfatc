@@ -1,0 +1,77 @@
+========================================
+Scope Name: global
+Parent Scope: NULL (Global)
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   Calculator __temp_Calculator_0 = Object(__temp_Calculator_0)
+   Calculator __temp_Calculator_1 = Object(__temp_Calculator_1)
+   Calculator __temp_Calculator_2 = Object(__temp_Calculator_2)
+   Calculator __temp_Calculator_3 = Object(__temp_Calculator_3)
+   Calculator c1 = Object(__temp_Calculator_0)
+   int v = 1
+
+Functions:
+   Function: createCalc | Return Type: Calculator
+     Params: int startVal
+   Function: f | Return Type: int
+     Params: int v
+
+Classes Defined Here:
+   Class: Calculator
+
+========================================
+Scope Name: f
+Parent Scope: global
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   int v = 0
+
+========================================
+Scope Name: Calculator
+Parent Scope: global
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   int val = 0
+
+Functions:
+   Function: add | Return Type: int
+     Params: int v
+   Function: f | Return Type: int
+     Params: int v
+   Function: getValue | Return Type: int
+     Params: None
+
+========================================
+Scope Name: add
+Parent Scope: Calculator
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   int v = 0
+
+========================================
+Scope Name: getValue
+Parent Scope: Calculator
+----------------------------------------
+Variables: None
+
+========================================
+Scope Name: f
+Parent Scope: Calculator
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   int v = 0
+
+========================================
+Scope Name: createCalc
+Parent Scope: global
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   Calculator c = Object(c)
+   int startVal = 0
+

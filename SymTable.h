@@ -3,6 +3,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include "Value.h"
 
 using namespace std;
@@ -57,12 +58,14 @@ private:
     string name;
     SymTable* parent;
 
+    static vector<SymTable*>all_tables;
+
     map<string, IdInfo> variables;
     map<string, IdInfo> functions;
     map<string, IdInfo> classes;
 
 public:
-    SymTable(const string& name, SymTable* parent = nullptr);
+    SymTable(const string& name, SymTable* parent = nullptr,bool save=true);
 
     void addVar(const string& type, const string& name);
     void addFunction(const string& type,const string& name,const vector<pair<string,string>>& params = {});
@@ -93,4 +96,7 @@ public:
 
     SymTable* getParent() const { return parent; }
     void copyVariablesFrom(const SymTable* source);
+
+    void printTable(ostream& out);
+    static void printAllTables(const string& filename);
 };
