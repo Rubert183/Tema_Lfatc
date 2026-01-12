@@ -52,10 +52,9 @@ extern int yydebug;
     class ASTNode;
     class SymTable;
     struct Expr;
-    struct ProgramLists;
     struct CallParams;
 
-#line 59 "limbaj.tab.h"
+#line 58 "limbaj.tab.h"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -99,7 +98,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 39 "limbaj.y"
+#line 38 "limbaj.y"
 
     int intVal;
     float floatVal;
@@ -110,7 +109,7 @@ union YYSTYPE
     ASTNode* ast;
     CallParams* call_params;
 
-#line 114 "limbaj.tab.h"
+#line 113 "limbaj.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

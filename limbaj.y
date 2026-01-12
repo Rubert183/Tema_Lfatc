@@ -4,7 +4,6 @@
     class ASTNode;
     class SymTable;
     struct Expr;
-    struct ProgramLists;
     struct CallParams;
 }
 
@@ -198,11 +197,6 @@ func: type_or_class ID {
                         cout << "Redeclared function " << *$2 << " at line " << yylineno << endl;
                         errorCount++;
              } else {
-                        /*current->addFunction(currentType, *$2);
-                        SymTable* funcScope = new SymTable(*$2, current);
-                        currentIdInfo=current->getFunction(*$2);
-                        currentIdInfo->function_scope = funcScope;
-                        current = current->getFunctionScope(*$2);*/
                         current->addFunction(currentType, *$2);
                         currentIdInfo = current->getFunction(*$2);
                         current = current->getFunctionScope(*$2);
@@ -336,11 +330,6 @@ method : type_or_class ID {
         cout << "Redeclared method " << methodName << " at line " << yylineno << endl;
         errorCount++;
     } else {
-        /*current->addFunction(currentType, methodName);
-        SymTable* methodScope = new SymTable(methodName, current);
-        currentIdInfo = current->getFunction(methodName);
-        currentIdInfo->function_scope = methodScope;
-        current = methodScope;*/
         current->addFunction(currentType, methodName);
         currentIdInfo = current->getFunction(methodName);
         current = current->getFunctionScope(methodName);
@@ -804,7 +793,7 @@ class_element
                     IdInfo* method = classScope->getFunction(*$3);
                     if(method){
                         $$ = makeExpr(method->type);
-                        $$->cur_scope = classScope;
+                        //$$->cur_scope = classScope;
                         $$->ast = new ASTOther();
                     } else {
                         cout << "Undefined class element " << *$3 << endl;
@@ -839,7 +828,7 @@ class_element
                     IdInfo* method = classScope->getFunction(*$3);
                     if(method){
                         $$ = makeExpr(method->type);
-                        $$->cur_scope = classScope; 
+                        //$$->cur_scope = classScope; 
                         $$->ast = new ASTOther();
                     } else {
                         cout << "Undefined field " << *$3 << " in class returned by function" << endl;

@@ -4,74 +4,55 @@ Parent Scope: NULL (Global)
 ----------------------------------------
 Variables:
   [Type] [Name] = [Value]
-   Calculator __temp_Calculator_0 = Object(__temp_Calculator_0)
-   Calculator __temp_Calculator_1 = Object(__temp_Calculator_1)
-   Calculator __temp_Calculator_2 = Object(__temp_Calculator_2)
-   Calculator __temp_Calculator_3 = Object(__temp_Calculator_3)
-   Calculator c1 = Object(__temp_Calculator_0)
-   int v = 1
+   MyClass __temp_MyClass_0 = Object(__temp_MyClass_0)
+   MyClass __temp_MyClass_1 = Object(__temp_MyClass_1)
+   float f = 3.140000
+   MyClass m = Object(__temp_MyClass_0)
+   PI p = Object(p)
 
 Functions:
-   Function: createCalc | Return Type: Calculator
-     Params: int startVal
-   Function: f | Return Type: int
-     Params: int v
+   Function: new_MyClass | Return Type: MyClass
+     Params: int a, float b
 
 Classes Defined Here:
-   Class: Calculator
+   Class: MyClass
+   Class: PI
 
 ========================================
-Scope Name: f
+Scope Name: PI
 Parent Scope: global
 ----------------------------------------
 Variables:
   [Type] [Name] = [Value]
-   int v = 0
-
-========================================
-Scope Name: Calculator
-Parent Scope: global
-----------------------------------------
-Variables:
-  [Type] [Name] = [Value]
-   int val = 0
+   int a = 0
 
 Functions:
-   Function: add | Return Type: int
-     Params: int v
-   Function: f | Return Type: int
-     Params: int v
-   Function: getValue | Return Type: int
+   Function: get_PI | Return Type: float
      Params: None
 
 ========================================
-Scope Name: add
-Parent Scope: Calculator
-----------------------------------------
-Variables:
-  [Type] [Name] = [Value]
-   int v = 0
-
-========================================
-Scope Name: getValue
-Parent Scope: Calculator
+Scope Name: get_PI
+Parent Scope: PI
 ----------------------------------------
 Variables: None
 
 ========================================
-Scope Name: f
-Parent Scope: Calculator
-----------------------------------------
-Variables:
-  [Type] [Name] = [Value]
-   int v = 0
-
-========================================
-Scope Name: createCalc
+Scope Name: MyClass
 Parent Scope: global
 ----------------------------------------
 Variables:
   [Type] [Name] = [Value]
-   Calculator c = Object(c)
-   int startVal = 0
+   int a = 0
+   float b = 0.000000
+   PI p = Object(p)
+
+========================================
+Scope Name: new_MyClass
+Parent Scope: global
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   int a = 0
+   float b = 0.000000
+   MyClass m_local = Object(m_local)
 
