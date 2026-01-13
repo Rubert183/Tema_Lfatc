@@ -68,7 +68,8 @@ public:
             case ValueType::VOID:
                 cout<<"Can't print VOID expresions"<<endl;
             default:
-                cout<<"Can't print objects of type "<< get<std::string>(data) <<" since deserialization for this type is not implemented"<<endl;
+                string class_name = get<std::string>(data);
+                cout<<"Can't print this objects since deserialization for custom types is not implemented"<<endl;
                 break;
         }
     }

@@ -18,9 +18,10 @@ class Calculator {
     },
 
     int f(int v) {
+        float va;
         if (v > 1)
         {
-            return v * f(v - 1);
+            return v * f(v-1);
         }
         else {
             return 1;
@@ -34,9 +35,16 @@ Calculator createCalc(int startVal) {
     c.val := startVal;
     return c;
 }
- 
+
+string scrie_ceva(string c){
+    string c1;
+    c1:=c;
+    return c1;
+}
+
 Calculator c1;
 int v;
+Calculator c2;
 
 main {
     c1:=createCalc(7);
@@ -51,4 +59,10 @@ main {
         v:=f(v);
         Print(v);
     }
+
+    Print(" ");
+    c2:=c1;
+    Print(c2.val);
+
+    Print(scrie_ceva("Ana are mere!"));
 }

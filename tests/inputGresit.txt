@@ -1,0 +1,98 @@
+class A{
+    int x,
+    int y,
+    float z,
+
+    int g(int z){
+        int x;
+        return zzz * 100 * x;
+    },
+
+    float f1(int x){
+        if(x==20){
+            return 10.0;
+        }
+        return 20.0;
+    }
+};
+
+A new_A(){
+    A a;
+    a.x:=19;
+    a.y:=90;
+    return a;
+}
+
+int f(int z,float x, bool b){
+    if(b==true && x>1.0){
+        return z * 10;
+    }
+    return z;
+}
+
+class B{
+    int b,
+    int bb,
+    int g(int z){
+        return z+b;
+    },
+    int f(int z){
+        if(z>4){
+            int var;
+            var:=10;
+        }
+        return b+bb*z;
+    },
+    int f(){return 0;}
+};
+
+B new_B(){
+    B b;
+    b.b:=5;
+    b.bb:=10;
+    return b;
+}
+
+string bfunc(bool b, string s){
+    if(b==true){
+        return s;
+    }
+    else{
+        return "bau";
+    }
+}
+
+
+float fx;
+int x;
+int z;
+string s;
+int ix;
+int ix;
+bool b1,b2;
+B obb; A oba;
+
+main{
+    fx := 65.0;
+    ix := 10;
+    Print(fx * 10 - 65.0 + f(10,10.0,true) );
+      
+    s := "test";
+    b1 := true;
+    b2 := b1;
+    Print(s + b1);
+    b1 := b1 + b2;
+    fx := b1 || b2;
+    oba := new_A();
+    obb := new_B();
+    oba.x := oba.b + bfunc(b1,s);
+    oba.x := obb.b + fx;
+
+    Print(f(ix,fx,fx));
+    Print(f(ix,fx,true,true));
+
+    oba.f(ix);
+    oba.zzz := 100;
+    oba.x := oba.x + oba.fl(ix);
+
+}

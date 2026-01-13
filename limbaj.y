@@ -33,6 +33,7 @@ class SymTable* current;
 string currentType;
 IdInfo *currentIdInfo;
 int errorCount = 0;
+bool go_up=true;
 %}
 
 %union {
@@ -189,12 +190,15 @@ var : type_or_class list_var ';'
 func: type_or_class ID {
              if(current->existsClass(*$2)){
                  cout << "Function " << *$2 << " has the name of a class at line " << yylineno << endl;
+                 go_up=false;
                  errorCount++;
              } else if(current->existsVar_current(*$2)){
                     cout << "Function " << *$2 << " has the name of a variable at line " << yylineno << endl;
+                    go_up=false;
                     errorCount++;
              } else if(current->existsFunction(*$2)){
                         cout << "Redeclared function " << *$2 << " at line " << yylineno << endl;
+                        current = current->getFunctionScope(*$2);
                         errorCount++;
              } else {
                         current->addFunction(currentType, *$2);
@@ -204,7 +208,9 @@ func: type_or_class ID {
          } '(' opt_param_list ')' '{' func_body '}' {
             string func_name = *$2;
             SymTable* func_scope = current->getFunctionScope(func_name);
-            current=current->getParent();
+            if(go_up)
+                current=current->getParent();
+            go_up=true;
             if (errorCount == 0 && $8) {
                 $$ = new ASTFunctionDef(func_name, *$8, func_scope);
             } else {
@@ -245,25 +251,26 @@ class : CLASS_MK ID {
         string className = *$2;
         if(current->existsVar(className)){
             cout << "Class " << className << " has the name of a variable at line " << yylineno << endl;
+            go_up=false;
             errorCount++;
         } else if(current->existsFunction(className)){
             cout << "Class " << className << " has the name of a function at line " << yylineno << endl;
+            go_up=false;
             errorCount++;
         } else if(current->existsClass(className)){
             cout << "Redeclared class " << className << " at line " << yylineno << endl;
             errorCount++;
+            current = current->getClassScope(className);
         } else {
-            /*current->addClass(className);
-            SymTable* classScope = new SymTable(className, current);
-            current->getClass(className)->class_scope = classScope;
-            current = classScope;*/
             current->addClass(className);
             current = current->getClassScope(className);
         }
       } '{' class_list '}' ';' {
             string className = *$2;
             SymTable* class_scope = current->getClassScope(className);
-            current=current->getParent();
+            if(go_up)
+                current=current->getParent();
+            go_up=true;
             if (errorCount == 0 && class_scope) {
                 ASTClassDef* class_def = new ASTClassDef(className, class_scope);
                 if ($5) {
@@ -322,13 +329,16 @@ method : type_or_class ID {
     string methodName = *$2;
     if(current->existsClass(methodName)){
         cout << "Method " << methodName << " has the name of a class at line " << yylineno << endl;
+        go_up=false;
         errorCount++;
     } else if(current->existsVar_current(methodName)){
         cout << "Method " << methodName << " has the name of a field at line " << yylineno << endl;
+        go_up=false;
         errorCount++;
     } else if(current->existsFunction_current(methodName)){
         cout << "Redeclared method " << methodName << " at line " << yylineno << endl;
         errorCount++;
+        current = current->getFunctionScope(methodName);
     } else {
         current->addFunction(currentType, methodName);
         currentIdInfo = current->getFunction(methodName);
@@ -337,7 +347,9 @@ method : type_or_class ID {
     } '(' opt_param_list ')' '{' method_body '}' {
         string methodName = *$2;
         SymTable* method_scope = current->getFunctionScope(methodName);
-        current = current->getParent();
+        if(go_up)
+            current = current->getParent();
+        go_up=true;
         if (errorCount == 0 && method_scope && $8) {
             $$ = new ASTFunctionDef(methodName, *$8, method_scope);
         } else {
@@ -506,9 +518,8 @@ expression
     : '(' expression ')' { $$ = $2; }
     | expression '+' expression {
         if(*$1->type!=*$3->type){
-            cout << "Invalid addition type mismatch at line " << yylineno << endl;
-            errorCount++;
-            $$=makeExpr("");
+            if(!(*$1->type).empty()&&!(*$3->type).empty())
+             cout << "Type mismatch + at line " << yylineno  << endl; errorCount++; $$=makeExpr("");
         } else if(*$1->type=="int"||*$1->type=="float"){
             $$=makeExpr(*$1->type);
             if ($1->ast && $3->ast) $$->ast = new ASTBinaryOp("+", $1->ast, $3->ast);
@@ -520,42 +531,46 @@ expression
     }
     | expression '-' expression {
         if(*$1->type!=*$3->type){
-            cout << "Type mismatch -" << endl; errorCount++; $$=makeExpr("");
+            if(!(*$1->type).empty()&&!(*$3->type).empty())
+            cout << "Type mismatch - at line " << yylineno  << endl; errorCount++; $$=makeExpr("");
         } else if(*$1->type=="int"||*$1->type=="float"){
             $$=makeExpr(*$1->type);
             if ($1->ast && $3->ast) $$->ast = new ASTBinaryOp("-", $1->ast, $3->ast);
         } else {
-            cout << "Invalid sub op" << endl; errorCount++; $$=makeExpr("");
+            cout << "Invalid sub operation at line " << yylineno  << endl; errorCount++; $$=makeExpr("");
         }
     }
     | expression '*' expression {
         if(*$1->type!=*$3->type){
-            cout << "Type mismatch *" << endl; errorCount++; $$=makeExpr("");
+            if(!(*$1->type).empty()&&!(*$3->type).empty())
+            cout << "Type mismatch * at line " << yylineno  << endl; errorCount++; $$=makeExpr("");
         } else if(*$1->type=="int"||*$1->type=="float"){
             $$=makeExpr(*$1->type);
             if ($1->ast && $3->ast) $$->ast = new ASTBinaryOp("*", $1->ast, $3->ast);
         } else {
-            cout << "Invalid mul op" << endl; errorCount++; $$=makeExpr("");
+            cout << "Invalid mul operation at line " << yylineno  << endl; errorCount++; $$=makeExpr("");
         }
     }
     | expression '/' expression {
         if(*$1->type!=*$3->type){
-            cout << "Type mismatch /" << endl; errorCount++; $$=makeExpr("");
+            if(!(*$1->type).empty()&&!(*$3->type).empty())
+            cout << "Type mismatch / at line " << yylineno  << endl; errorCount++; $$=makeExpr("");
         } else if(*$1->type=="int"||*$1->type=="float"){
             $$=makeExpr(*$1->type);
             if ($1->ast && $3->ast) $$->ast = new ASTBinaryOp("/", $1->ast, $3->ast);
         } else {
-            cout << "Invalid div op" << endl; errorCount++; $$=makeExpr("");
+            cout << "Invalid div operation at line " << yylineno  << endl; errorCount++; $$=makeExpr("");
         }
     }
     | expression '%' expression {
         if(*$1->type!=*$3->type){
-            cout << "Type mismatch %" << endl; errorCount++; $$=makeExpr("");
+            if(!(*$1->type).empty()&&!(*$3->type).empty())
+            cout << "Type mismatch \% at line " << yylineno << endl; errorCount++; $$=makeExpr("");
         } else if(*$1->type=="int"){
             $$=makeExpr("int");
             if ($1->ast && $3->ast) $$->ast = new ASTBinaryOp("%", $1->ast, $3->ast);
         } else {
-            cout << "Invalid mod op" << endl; errorCount++; $$=makeExpr("");
+            cout << "Invalid mod operation at line " << yylineno  << endl; errorCount++; $$=makeExpr("");
         }
     }
     | '-' expression %prec NOT { 
@@ -563,6 +578,7 @@ expression
             $$ = makeExpr(*$2->type);
             if ($2->ast) $$->ast = new ASTUnaryOp("-", $2->ast);
         } else {
+            if(!(*$2->type).empty())
              cout << "Type mismatch for unary minus at line " << yylineno << endl;
              errorCount++;
              $$ = makeExpr("");
@@ -581,27 +597,45 @@ expression
         if ($2->ast) $$->ast = new ASTUnaryOp("not", $2->ast);
     }
     | expression LT expression {
-        if(*$1->type != *$3->type) { cout << "Type mismatch for operator '<' at line " << yylineno << endl; errorCount++; $$=makeExpr(""); }
+        if(*$1->type != *$3->type) { 
+            if(!(*$1->type).empty()&&!(*$3->type).empty())
+            cout << "Type mismatch for operator '<' at line " << yylineno << endl; errorCount++; $$=makeExpr(""); 
+        }
         else { $$=makeExpr("bool"); if($1->ast && $3->ast) $$->ast = new ASTBinaryOp("<", $1->ast, $3->ast); }
     }
     | expression GT expression {
-        if(*$1->type != *$3->type) { cout << "Type mismatch for operator '>' at line " << yylineno << endl; errorCount++; $$=makeExpr(""); }
+        if(*$1->type != *$3->type) {  
+            if(!(*$1->type).empty()&&!(*$3->type).empty())
+            cout << "Type mismatch for operator '>' at line " << yylineno << endl; errorCount++; $$=makeExpr(""); 
+        }
         else { $$=makeExpr("bool"); if($1->ast && $3->ast) $$->ast = new ASTBinaryOp(">", $1->ast, $3->ast); }
     }
     | expression LE expression {
-        if(*$1->type != *$3->type) { cout << "Type mismatch for operator '<=' at line " << yylineno << endl;errorCount++; $$=makeExpr(""); }
+        if(*$1->type != *$3->type) {  
+            if(!(*$1->type).empty()&&!(*$3->type).empty())
+            cout << "Type mismatch for operator '<=' at line " << yylineno << endl;errorCount++; $$=makeExpr(""); 
+        }
         else { $$=makeExpr("bool"); if($1->ast && $3->ast) $$->ast = new ASTBinaryOp("<=", $1->ast, $3->ast); }
     }
     | expression GE expression {
-        if(*$1->type != *$3->type) { cout << "Type mismatch for operator '>=' at line " << yylineno << endl;errorCount++; $$=makeExpr(""); }
+        if(*$1->type != *$3->type) {
+             if(!(*$1->type).empty()&&!(*$3->type).empty())
+             cout << "Type mismatch for operator '>=' at line " << yylineno << endl;errorCount++; $$=makeExpr(""); 
+        }
         else { $$=makeExpr("bool"); if($1->ast && $3->ast) $$->ast = new ASTBinaryOp(">=", $1->ast, $3->ast); }
     }
     | expression EQ expression {
-        if(*$1->type != *$3->type) { cout << "Type mismatch for operator '==' at line " << yylineno << endl;errorCount++; $$=makeExpr(""); }
+        if(*$1->type != *$3->type) { 
+             if(!(*$1->type).empty()&&!(*$3->type).empty())
+            cout << "Type mismatch for operator '==' at line " << yylineno << endl;errorCount++; $$=makeExpr(""); 
+        }
         else { $$=makeExpr("bool"); if($1->ast && $3->ast) $$->ast = new ASTBinaryOp("==", $1->ast, $3->ast); }
     }
     | expression NEQ expression {
-        if(*$1->type != *$3->type) { cout << "Type mismatch for operator '!=' at line " << yylineno << endl; errorCount++; $$=makeExpr(""); }
+        if(*$1->type != *$3->type) { 
+             if(!(*$1->type).empty()&&!(*$3->type).empty())
+            cout << "Type mismatch for operator '!=' at line " << yylineno << endl; errorCount++; $$=makeExpr(""); 
+        }
         else { $$=makeExpr("bool"); if($1->ast && $3->ast) $$->ast = new ASTBinaryOp("!=", $1->ast, $3->ast); }
     }
     | call { $$ = $1; }
@@ -657,8 +691,8 @@ call : ID '(' call_params ')' {
             expr_result->ast = new ASTOther();
         } else {
              for(size_t i = 0; i < types->size(); i++){
-                if(f->params[i].first!= (*types)[i]){
-                    cout << "Type mismatch for param " << i+1 << " in function " << *$1 << endl;
+                if((*types)[i] != "" && f->params[i].first!= (*types)[i]){
+                    cout << "Type mismatch for param " << i+1 << " in function " << *$1 <<" at line " << yylineno << endl;
                     errorCount++;
                 }
             }
@@ -679,7 +713,7 @@ call : ID '(' call_params ')' {
         expr_result->ast = new ASTOther();
     } else {
         SymTable* classScope = typeInfo->class_scope;
-        IdInfo* m = classScope->getFunction(*$3);
+        IdInfo* m = classScope->getFunction_current(*$3);
         if(!m){
             cout << "Undefined method " << *$3 << endl;
             errorCount++;
@@ -694,7 +728,7 @@ call : ID '(' call_params ')' {
             } else {
                  for(size_t i = 0; i < types->size(); i++){
                     if(m->params[i].first != (*types)[i]){
-                        cout << "Type mismatch param" << endl; errorCount++;
+                        cout << "Type mismatch param " << i+1 << endl; errorCount++;
                     }
                 }
                 expr_result = makeExpr(m->type);
@@ -718,7 +752,7 @@ call : ID '(' call_params ')' {
     } else {
         SymTable* classScope = typeInfo->class_scope;
         // 2. Cautam metoda in scope-ul clasei returnate
-        IdInfo* m = classScope->getFunction(*$3);
+        IdInfo* m = classScope->getFunction_current(*$3);
         
         if(!m){
             cout << "Undefined method " << *$3 << " in class " << *$1->type << endl;
@@ -737,8 +771,8 @@ call : ID '(' call_params ')' {
                 expr_result->ast = new ASTOther();
             } else {
                  for(size_t i = 0; i < types->size(); i++){
-                    if(m->params[i].first != (*types)[i]){
-                        cout << "Type mismatch param " << i+1 << " in method " << *$3 << endl;
+                    if((*types)[i] != "" && m->params[i].first != (*types)[i]){
+                        cout << "Type mismatch for param " << i+1 << " in method " << *$3 << " at line "<<yylineno <<endl;
                         errorCount++;
                     }
                 }
@@ -790,10 +824,9 @@ class_element
                     if ($1->ast) $$->ast = new ASTFieldAccess($1->ast, *$3);
                     else $$->ast = new ASTOther();
                 } else {
-                    IdInfo* method = classScope->getFunction(*$3);
+                    IdInfo* method = classScope->getFunction_current(*$3);
                     if(method){
                         $$ = makeExpr(method->type);
-                        //$$->cur_scope = classScope;
                         $$->ast = new ASTOther();
                     } else {
                         cout << "Undefined class element " << *$3 << endl;
@@ -825,10 +858,9 @@ class_element
                     if ($1->ast) $$->ast = new ASTFieldAccess($1->ast, *$3);
                     else $$->ast = new ASTOther();
                 } else {
-                    IdInfo* method = classScope->getFunction(*$3);
+                    IdInfo* method = classScope->getFunction_current(*$3);
                     if(method){
                         $$ = makeExpr(method->type);
-                        //$$->cur_scope = classScope; 
                         $$->ast = new ASTOther();
                     } else {
                         cout << "Undefined field " << *$3 << " in class returned by function" << endl;
@@ -848,6 +880,10 @@ void yyerror(const char * s){
 
 int main(int argc, char** argv){
      yyin=fopen(argv[1],"r");
+     if(yyin==nullptr){
+        cout<<"The text file named "<<argv[1]<<" doesn't exists!\n";
+        exit(1);
+     }
      const string global="global";
      current = new SymTable(global);
      yyparse();

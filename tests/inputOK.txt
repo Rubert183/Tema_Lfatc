@@ -1,0 +1,95 @@
+class A{
+    int x,
+    int y,
+    int g(int z){
+        return z + 100 + x;
+    }
+};
+
+A new_A(){
+    A a;
+    a.x:=19;
+    a.y:=90;
+    return a;
+}
+
+int f(int z){
+    int x; int b;
+    x:=5; b:=10;
+    bool flag;
+
+    if(flag==true && x+5<b){
+        return x+b;
+    }
+    return z*10;
+}
+
+class B{
+    int b,
+    int bb,
+    int g(int z){
+        A a; int x;
+        a:=new_A(); x:=100;
+        return x + a.x + z;
+    },
+    int f(int z){
+        return 200*z;
+    }
+};
+
+B new_B(){
+    B b;
+    b.b:=5;
+    b.bb:=10;
+    return b;
+}
+
+string bfunc(bool b, string s){
+    if(b==true){
+        return s;
+    }
+    else{
+        return "bau";
+    }
+}
+
+float fx;
+string s;
+int ix;
+bool b1,b2;
+B obb; A oba;
+
+main{
+    fx := 65.0;
+    fx := fx + 10.0 * fx - 65.0;
+    Print(fx);
+
+    s:="test";
+    Print(s);
+    s:="otherstr";
+    Print(s);
+
+    oba := new_A();
+    obb := new_B();
+    ix := 10;
+    ix := ix + (ix + f(ix*4))*2 + oba.x * oba.y + oba.g(10) + obb.b * obb.bb ;
+    Print(ix);
+
+    oba.x := f(1000);
+    oba.y := f(100) + oba.x;
+    b2 := true;
+    b1 := b2 || not b2;
+    Print(bfunc(b1, "s"));
+
+    Print(f(ix) + 5 > 5 + obb.b);
+    Print(ix+5 > ix+6);
+    Print((b1 || b2 && not b1) == false); 
+    Print(oba.x == oba.y);
+
+    Print(ix+5 > ix+6 || (b1 || b2 && not b1 == false && f(ix) + 5 > 5 + obb.b) || oba.x == oba.y);
+
+    if(ix+2 > ix + 5 && ix + 3 > f(45*3 + ix) - 10) {
+	    ix := 100;
+    }
+
+}
