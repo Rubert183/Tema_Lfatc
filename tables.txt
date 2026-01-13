@@ -4,55 +4,117 @@ Parent Scope: NULL (Global)
 ----------------------------------------
 Variables:
   [Type] [Name] = [Value]
-   MyClass __temp_MyClass_0 = Object(__temp_MyClass_0)
-   MyClass __temp_MyClass_1 = Object(__temp_MyClass_1)
-   float f = 3.140000
-   MyClass m = Object(__temp_MyClass_0)
-   PI p = Object(p)
+   A __temp_A_0 = Object(__temp_A_0)
+   B __temp_B_1 = Object(__temp_B_1)
+   bool b1 = true
+   bool b2 = true
+   float fx = 650.000000
+   int ix = 2719
+   A oba = Object(__temp_A_0)
+   B obb = Object(__temp_B_1)
+   string s = "otherstr"
 
 Functions:
-   Function: new_MyClass | Return Type: MyClass
-     Params: int a, float b
-
-Classes Defined Here:
-   Class: MyClass
-   Class: PI
-
-========================================
-Scope Name: PI
-Parent Scope: global
-----------------------------------------
-Variables:
-  [Type] [Name] = [Value]
-   int a = 0
-
-Functions:
-   Function: get_PI | Return Type: float
+   Function: bfunc | Return Type: string
+     Params: bool b, string s
+   Function: f | Return Type: int
+     Params: int z
+   Function: new_A | Return Type: A
+     Params: None
+   Function: new_B | Return Type: B
      Params: None
 
-========================================
-Scope Name: get_PI
-Parent Scope: PI
-----------------------------------------
-Variables: None
+Classes Defined Here:
+   Class: A
+   Class: B
 
 ========================================
-Scope Name: MyClass
+Scope Name: A
 Parent Scope: global
 ----------------------------------------
 Variables:
   [Type] [Name] = [Value]
-   int a = 0
-   float b = 0.000000
-   PI p = Object(p)
+   int x = 0
+   int y = 0
+
+Functions:
+   Function: g | Return Type: int
+     Params: int z
 
 ========================================
-Scope Name: new_MyClass
+Scope Name: g
+Parent Scope: A
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   int z = 0
+
+========================================
+Scope Name: new_A
 Parent Scope: global
 ----------------------------------------
 Variables:
   [Type] [Name] = [Value]
-   int a = 0
-   float b = 0.000000
-   MyClass m_local = Object(m_local)
+   A a = Object(a)
+
+========================================
+Scope Name: f
+Parent Scope: global
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   int b = 0
+   bool flag = true
+   int x = 0
+   int z = 0
+
+========================================
+Scope Name: B
+Parent Scope: global
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   int b = 0
+   int bb = 0
+
+Functions:
+   Function: f | Return Type: int
+     Params: int z
+   Function: g | Return Type: int
+     Params: int z
+
+========================================
+Scope Name: g
+Parent Scope: B
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   A a = Object(a)
+   int x = 0
+   int z = 0
+
+========================================
+Scope Name: f
+Parent Scope: B
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   int z = 0
+
+========================================
+Scope Name: new_B
+Parent Scope: global
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   B b = Object(b)
+
+========================================
+Scope Name: bfunc
+Parent Scope: global
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   bool b = true
+   string s = ""
 
