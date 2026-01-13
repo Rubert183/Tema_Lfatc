@@ -10,6 +10,7 @@ enum class ValueType {
     FLOAT,
     BOOL,
     STRING,
+    OBJECT,
     VOID // folosit numai ca default value in constructor
 };
 
@@ -44,7 +45,12 @@ public:
         new_val.data = v;
         return new_val;
     }
-
+    static Value makeObject(string instanceName) {
+        Value new_val;
+        new_val.type = ValueType::OBJECT;
+        new_val.data = instanceName; 
+        return new_val;
+    }
     void print() {
         switch (type) {
             case ValueType::INT:
@@ -59,8 +65,27 @@ public:
             case ValueType::STRING:
                 cout << get<std::string>(data) << endl;
                 break;
+            case ValueType::VOID:
+                cout<<"Can't print VOID expresions"<<endl;
             default:
+                cout<<"Can't print objects of type "<< get<std::string>(data) <<" since deserialization for this type is not implemented"<<endl;
                 break;
+        }
+    }
+    string toString() const {
+        switch (type) {
+            case ValueType::INT:
+                return to_string(get<int>(data));
+            case ValueType::FLOAT:
+                return to_string(get<float>(data));
+            case ValueType::BOOL:
+                return get<bool>(data) ? "true" : "false";
+            case ValueType::STRING:
+                return "\"" + get<std::string>(data) + "\"";
+            case ValueType::OBJECT:
+                return "Object(" + get<std::string>(data) + ")"; 
+            default:
+                return "void";
         }
     }
 };

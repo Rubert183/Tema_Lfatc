@@ -8,7 +8,7 @@ using namespace std;
 struct Expr {
     string* type;
     ASTNode* ast;
-    SymTable* cur_scope = nullptr;
+    //SymTable* cur_scope = nullptr;
 };
 
 inline Expr* makeExpr(const string& t, ASTNode* node = nullptr) {

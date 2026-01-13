@@ -1,0 +1,58 @@
+========================================
+Scope Name: global
+Parent Scope: NULL (Global)
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   MyClass __temp_MyClass_0 = Object(__temp_MyClass_0)
+   MyClass __temp_MyClass_1 = Object(__temp_MyClass_1)
+   float f = 3.140000
+   MyClass m = Object(__temp_MyClass_0)
+   PI p = Object(p)
+
+Functions:
+   Function: new_MyClass | Return Type: MyClass
+     Params: int a, float b
+
+Classes Defined Here:
+   Class: MyClass
+   Class: PI
+
+========================================
+Scope Name: PI
+Parent Scope: global
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   int a = 0
+
+Functions:
+   Function: get_PI | Return Type: float
+     Params: None
+
+========================================
+Scope Name: get_PI
+Parent Scope: PI
+----------------------------------------
+Variables: None
+
+========================================
+Scope Name: MyClass
+Parent Scope: global
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   int a = 0
+   float b = 0.000000
+   PI p = Object(p)
+
+========================================
+Scope Name: new_MyClass
+Parent Scope: global
+----------------------------------------
+Variables:
+  [Type] [Name] = [Value]
+   int a = 0
+   float b = 0.000000
+   MyClass m_local = Object(m_local)
+

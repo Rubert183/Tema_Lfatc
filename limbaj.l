@@ -27,9 +27,9 @@
 "&&" { return AND; }
 "||" { return OR; }
 0 { yylval.intVal = atoi(yytext); return INT_CONST; }
-"-"?[1-9][0-9]* { yylval.intVal = atoi(yytext); return INT_CONST; }
-"-"?0\.[0-9]+ { yylval.floatVal = atof(yytext); return FLOAT_CONST; }
-"-"?[1-9][0-9]*\.[0-9]+ { yylval.floatVal = atof(yytext); return FLOAT_CONST; }
+[1-9][0-9]* { yylval.intVal = atoi(yytext); return INT_CONST; }
+0\.[0-9]+ { yylval.floatVal = atof(yytext); return FLOAT_CONST; }
+[1-9][0-9]*\.[0-9]+ { yylval.floatVal = atof(yytext); return FLOAT_CONST; }
 \"[^\"]*\" { yylval.strVal = new std::string(yytext+1, strlen(yytext)-2); return STRING_CONST; }
 [ \t] ;
 \n {yylineno++;}

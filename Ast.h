@@ -10,7 +10,8 @@
 using namespace std;
 
 // Used to jump out of nested loops/ifs when 'return' is hit
-class ReturnException : public exception {
+class ReturnException : public exception
+{
 public:
     Value value;
     ReturnException(Value v) : value(v) {}
@@ -20,429 +21,604 @@ class ASTFunctionDef;
 class ASTClassDef;
 
 // Simulates the Heap: Stores values for specific instances (e.g., p1.age vs p2.age)
-class InstanceManager {
+class InstanceManager
+{
 public:
     static map<string, map<string, Value>> memory;
 
-    static Value getField(const string& instanceName, const string& fieldName) {
+    static Value getField(const string &instanceName, const string &fieldName)
+    {
         return memory[instanceName][fieldName];
     }
 
-    static void setField(const string& instanceName, const string& fieldName, Value val) {
+    static void setField(const string &instanceName, const string &fieldName, Value val)
+    {
         memory[instanceName][fieldName] = val;
     }
 
-    static bool hasField(const string& instanceName, const string& fieldName) {
-        if (memory.find(instanceName) == memory.end()) return false;
+    static bool hasField(const string &instanceName, const string &fieldName)
+    {
+        if (memory.find(instanceName) == memory.end())
+            return false;
         return memory[instanceName].find(fieldName) != memory[instanceName].end();
     }
 };
 
 map<string, map<string, Value>> InstanceManager::memory;
 
-class ASTNode {
+class ASTNode
+{
 public:
     virtual ~ASTNode() = default;
-    virtual Value eval(SymTable& sym) = 0;
-    virtual void setDefinitionsList(vector<ASTNode*>* defs) {}
+    virtual Value eval(SymTable &sym) = 0;
+    virtual void setDefinitionsList(vector<ASTNode *> *defs) {}
 };
 
-class ASTConstant : public ASTNode {
+class ASTConstant : public ASTNode
+{
     Value value;
+
 public:
-    ASTConstant(const Value& v) : value(v) {}
-    Value eval(SymTable& sym) override { return value; }
+    ASTConstant(const Value &v) : value(v) {}
+    Value eval(SymTable &sym) override { return value; }
 };
 
-class ASTId : public ASTNode { 
+class ASTId : public ASTNode
+{
     string name;
+
 public:
-    ASTId(const string& n) : name(n) {}
-    Value eval(SymTable& sym) override {
-        IdInfo* val = sym.getVar(name);
-        if (!val) return Value();
+    ASTId(const string &n) : name(n) {}
+    Value eval(SymTable &sym) override
+    {
+        IdInfo *val = sym.getVar(name);
+        if (!val)
+            return Value();
         return val->value;
     }
     string get_name() const { return name; }
 };
 
-class ASTOther : public ASTNode {
+class ASTOther : public ASTNode
+{
 public:
-    Value eval(SymTable&) override { return Value(); }
+    Value eval(SymTable &) override { return Value(); }
 };
 
-class ASTUnaryOp : public ASTNode {
+class ASTUnaryOp : public ASTNode
+{
     string op;
-    ASTNode* child;
+    ASTNode *child;
+
 public:
-    ASTUnaryOp(const string& o, ASTNode* c) : op(o), child(c) {}
-    void setDefinitionsList(vector<ASTNode*>* defs) override {
-        if (child) child->setDefinitionsList(defs);
+    ASTUnaryOp(const string &o, ASTNode *c) : op(o), child(c) {}
+    void setDefinitionsList(vector<ASTNode *> *defs) override
+    {
+        if (child)
+            child->setDefinitionsList(defs);
     }
-    Value eval(SymTable& sym) override {
+    Value eval(SymTable &sym) override
+    {
         Value child_val = child->eval(sym);
-        if (op == "not") return Value::makeBool(!get<bool>(child_val.data));
-        if (op == "-") {
-            if (child_val.type == ValueType::INT) return Value::makeInt(-get<int>(child_val.data));
-            if (child_val.type == ValueType::FLOAT) return Value::makeFloat(-get<float>(child_val.data));
+        if (op == "not")
+            return Value::makeBool(!get<bool>(child_val.data));
+        if (op == "-")
+        {
+            if (child_val.type == ValueType::INT)
+                return Value::makeInt(-get<int>(child_val.data));
+            if (child_val.type == ValueType::FLOAT)
+                return Value::makeFloat(-get<float>(child_val.data));
         }
         return Value();
     }
 };
 
-class ASTBinaryOp : public ASTNode {
+class ASTBinaryOp : public ASTNode
+{
     string op;
     ASTNode *left, *right;
 
 public:
-    ASTBinaryOp(const string& o, ASTNode* l, ASTNode* r) : op(o), left(l), right(r) {}
-    
-    void setDefinitionsList(vector<ASTNode*>* defs) override {
-        if (left) left->setDefinitionsList(defs);
-        if (right) right->setDefinitionsList(defs);
+    ASTBinaryOp(const string &o, ASTNode *l, ASTNode *r) : op(o), left(l), right(r) {}
+
+    void setDefinitionsList(vector<ASTNode *> *defs) override
+    {
+        if (left)
+            left->setDefinitionsList(defs);
+        if (right)
+            right->setDefinitionsList(defs);
     }
 
-    Value eval(SymTable& sym) override {
+    Value eval(SymTable &sym) override
+    {
         Value l = left->eval(sym);
         Value r = right->eval(sym);
 
         // Strict Type Checking & Arithmetic Logic
-        if (op == "+" || op == "-" || op == "*" || op == "/") {
+        if (op == "+" || op == "-" || op == "*" || op == "/")
+        {
             // Integer Logic
-            if (l.type == ValueType::INT && r.type == ValueType::INT) {
+            if (l.type == ValueType::INT && r.type == ValueType::INT)
+            {
                 int v1 = get<int>(l.data);
                 int v2 = get<int>(r.data);
-                if (op == "+") return Value::makeInt(v1 + v2);
-                if (op == "-") return Value::makeInt(v1 - v2);
-                if (op == "*") return Value::makeInt(v1 * v2);
-                if (op == "/") {
-                    if (v2 == 0) throw std::runtime_error("Division by zero");
+                if (op == "+")
+                    return Value::makeInt(v1 + v2);
+                if (op == "-")
+                    return Value::makeInt(v1 - v2);
+                if (op == "*")
+                    return Value::makeInt(v1 * v2);
+                if (op == "/")
+                {
+                    if (v2 == 0)
+                        throw std::runtime_error("Division by zero");
                     return Value::makeInt(v1 / v2);
                 }
             }
             // Float Logic
-            else if (l.type == ValueType::FLOAT && r.type == ValueType::FLOAT) {
+            else if (l.type == ValueType::FLOAT && r.type == ValueType::FLOAT)
+            {
                 float v1 = get<float>(l.data);
                 float v2 = get<float>(r.data);
-                if (op == "+") return Value::makeFloat(v1 + v2);
-                if (op == "-") return Value::makeFloat(v1 - v2);
-                if (op == "*") return Value::makeFloat(v1 * v2);
-                if (op == "/") {
-                     if (v2 == 0.0f) throw std::runtime_error("Division by zero");
-                     return Value::makeFloat(v1 / v2);
+                if (op == "+")
+                    return Value::makeFloat(v1 + v2);
+                if (op == "-")
+                    return Value::makeFloat(v1 - v2);
+                if (op == "*")
+                    return Value::makeFloat(v1 * v2);
+                if (op == "/")
+                {
+                    if (v2 == 0.0f)
+                        throw std::runtime_error("Division by zero");
+                    return Value::makeFloat(v1 / v2);
                 }
             }
-            else {
+            else
+            {
                 throw std::runtime_error("Type mismatch in arithmetic operation '" + op + "'");
             }
         }
 
-        if (op == "%") {
-            if (l.type == ValueType::INT && r.type == ValueType::INT) {
-                 int v2 = get<int>(r.data);
-                 if (v2 == 0) throw std::runtime_error("Modulo by zero");
-                 return Value::makeInt(get<int>(l.data) % v2);
+        if (op == "%")
+        {
+            if (l.type == ValueType::INT && r.type == ValueType::INT)
+            {
+                int v2 = get<int>(r.data);
+                if (v2 == 0)
+                    throw std::runtime_error("Modulo by zero");
+                return Value::makeInt(get<int>(l.data) % v2);
             }
             throw std::runtime_error("Modulo operator (%) requires two integers");
         }
 
-        if (op == "&&" || op == "||") {
-            if (l.type == ValueType::BOOL && r.type == ValueType::BOOL) {
+        if (op == "&&" || op == "||")
+        {
+            if (l.type == ValueType::BOOL && r.type == ValueType::BOOL)
+            {
                 bool v1 = get<bool>(l.data);
                 bool v2 = get<bool>(r.data);
-                if (op == "&&") return Value::makeBool(v1 && v2);
-                if (op == "||") return Value::makeBool(v1 || v2);
+                if (op == "&&")
+                    return Value::makeBool(v1 && v2);
+                if (op == "||")
+                    return Value::makeBool(v1 || v2);
             }
             throw std::runtime_error("Logical operator '" + op + "' requires boolean operands");
         }
 
-        if (op == "<" || op == ">" || op == "<=" || op == ">=") {
-            if (l.type == ValueType::INT && r.type == ValueType::INT) {
+        if (op == "<" || op == ">" || op == "<=" || op == ">=")
+        {
+            if (l.type == ValueType::INT && r.type == ValueType::INT)
+            {
                 int v1 = get<int>(l.data);
                 int v2 = get<int>(r.data);
-                if (op == "<") return Value::makeBool(v1 < v2);
-                if (op == ">") return Value::makeBool(v1 > v2);
-                if (op == "<=") return Value::makeBool(v1 <= v2);
-                if (op == ">=") return Value::makeBool(v1 >= v2);
+                if (op == "<")
+                    return Value::makeBool(v1 < v2);
+                if (op == ">")
+                    return Value::makeBool(v1 > v2);
+                if (op == "<=")
+                    return Value::makeBool(v1 <= v2);
+                if (op == ">=")
+                    return Value::makeBool(v1 >= v2);
             }
-            else if (l.type == ValueType::FLOAT && r.type == ValueType::FLOAT) {
+            else if (l.type == ValueType::FLOAT && r.type == ValueType::FLOAT)
+            {
                 float v1 = get<float>(l.data);
                 float v2 = get<float>(r.data);
-                if (op == "<") return Value::makeBool(v1 < v2);
-                if (op == ">") return Value::makeBool(v1 > v2);
-                if (op == "<=") return Value::makeBool(v1 <= v2);
-                if (op == ">=") return Value::makeBool(v1 >= v2);
+                if (op == "<")
+                    return Value::makeBool(v1 < v2);
+                if (op == ">")
+                    return Value::makeBool(v1 > v2);
+                if (op == "<=")
+                    return Value::makeBool(v1 <= v2);
+                if (op == ">=")
+                    return Value::makeBool(v1 >= v2);
             }
             throw std::runtime_error("Comparison '" + op + "' requires matching number types");
         }
 
-        if (op == "==" || op == "!=") {
-            if (l.type != r.type) throw std::runtime_error("Cannot compare different types for equality");
+        if (op == "==" || op == "!=")
+        {
+            if (l.type != r.type)
+                throw std::runtime_error("Cannot compare different types for equality");
 
             bool result = false;
-            if (l.type == ValueType::INT) result = (get<int>(l.data) == get<int>(r.data));
-            else if (l.type == ValueType::FLOAT) result = (get<float>(l.data) == get<float>(r.data));
-            else if (l.type == ValueType::BOOL) result = (get<bool>(l.data) == get<bool>(r.data));
-            else if (l.type == ValueType::STRING) result = (get<string>(l.data) == get<string>(r.data));
+            if (l.type == ValueType::INT)
+                result = (get<int>(l.data) == get<int>(r.data));
+            else if (l.type == ValueType::FLOAT)
+                result = (get<float>(l.data) == get<float>(r.data));
+            else if (l.type == ValueType::BOOL)
+                result = (get<bool>(l.data) == get<bool>(r.data));
+            else if (l.type == ValueType::STRING)
+                result = (get<string>(l.data) == get<string>(r.data));
 
-            if (op == "==") return Value::makeBool(result);
-            if (op == "!=") return Value::makeBool(!result);
+            if (op == "==")
+                return Value::makeBool(result);
+            if (op == "!=")
+                return Value::makeBool(!result);
         }
 
         throw std::runtime_error("Unknown operator " + op);
     }
 };
 
-class ASTFieldAccess : public ASTNode {
-    ASTNode* object;
+class ASTFieldAccess : public ASTNode
+{
+    ASTNode *object;
     string field_name;
 
 public:
-    ASTFieldAccess(ASTNode* obj, const string& field) : object(obj), field_name(field) {}
+    ASTFieldAccess(ASTNode *obj, const string &field) : object(obj), field_name(field) {}
     ~ASTFieldAccess() {}
-    
-    void setDefinitionsList(vector<ASTNode*>* defs) override {
-        if (object) object->setDefinitionsList(defs);
+
+    void setDefinitionsList(vector<ASTNode *> *defs) override
+    {
+        if (object)
+            object->setDefinitionsList(defs);
     }
-    
-    string getFieldName() const { return field_name; }
-    ASTNode* getObjectNode() const { return object; }
 
-    Value eval(SymTable& sym) override {
-        ASTId* obj_id = dynamic_cast<ASTId*>(object);
-        if (!obj_id) return Value(); 
+    Value eval(SymTable &sym) override
+    {
+        // 1. Evaluam obiectul (poate fi un ID sau un apel de functie)
+        Value val = object->eval(sym);
 
-        string instance_name = obj_id->get_name();
-        IdInfo* obj_var = sym.getVar(instance_name);
-        if (!obj_var) return Value();
+        // 2. Verificam daca rezultatul este o referinta catre un obiect
+        if (val.type != ValueType::OBJECT)
+        {
+            // Eroare de runtime sau return default
+            return Value();
+        }
 
-        // 1. Try fetching from Heap (Specific instance value)
-        if (InstanceManager::hasField(instance_name, field_name)) {
+        // 3. Extragem numele instantei (cheia din Heap)
+        string instance_name = get<string>(val.data);
+
+        // 4. Cautam in Heap
+        if (InstanceManager::hasField(instance_name, field_name))
+        {
             return InstanceManager::getField(instance_name, field_name);
         }
 
-        // 2. Lazy Load: If not in heap, fetch default from Class Definition
-        string class_name = obj_var->type;
-        IdInfo* class_info = sym.getClass(class_name);
-        if (class_info && class_info->class_scope) {
-             IdInfo* default_field = class_info->class_scope->getVar(field_name);
-             if (default_field) {
-                 InstanceManager::setField(instance_name, field_name, default_field->value);
-                 return default_field->value;
-             }
+        // 5. Lazy Load (Default values din definitia clasei)
+        // Avem nevoie sa stim tipul clasei. Din pacate, Value stocheaza doar numele instantei.
+        // Putem deduce tipul cautand instanta in SymTable curent sau parinti.
+        IdInfo *varInfo = sym.getVar(instance_name);
+        if (varInfo)
+        {
+            string class_name = varInfo->type;
+            IdInfo *class_info = sym.getClass(class_name);
+            if (class_info && class_info->class_scope)
+            {
+                IdInfo *default_field = class_info->class_scope->getVar(field_name);
+                if (default_field)
+                {
+                    InstanceManager::setField(instance_name, field_name, default_field->value);
+                    return default_field->value;
+                }
+            }
+        }
+
+        return Value();
+    }
+
+    string getFieldName() const { return field_name; }
+    ASTNode *getObjectNode() const { return object; }
+};
+
+class ASTAssign : public ASTNode
+{
+    ASTNode *target;
+    ASTNode *expr;
+
+public:
+    ASTAssign(ASTNode *t, ASTNode *e) : target(t), expr(e) {}
+
+    void setDefinitionsList(vector<ASTNode *> *defs) override
+    {
+        if (expr)
+            expr->setDefinitionsList(defs);
+    }
+
+    Value eval(SymTable &sym) override
+    {
+        Value expr_val = expr->eval(sym);
+
+        // Cazul 1: Asignare simpla (x = y sau x = func())
+        ASTId *id_node = dynamic_cast<ASTId *>(target);
+        if (id_node)
+        {
+            sym.updateVar(id_node->get_name(), expr_val);
+            return expr_val;
+        }
+
+        // Cazul 2: Asignare la camp (obj.field = val)
+        ASTFieldAccess *field_node = dynamic_cast<ASTFieldAccess *>(target);
+        if (field_node)
+        {
+            // Evaluam obiectul din stanga punctului pentru a afla instanta
+            Value objRef = field_node->getObjectNode()->eval(sym);
+
+            if (objRef.type == ValueType::OBJECT)
+            {
+                string instance_name = get<string>(objRef.data);
+                string field_name = field_node->getFieldName();
+
+                // Actualizam Heap-ul
+                InstanceManager::setField(instance_name, field_name, expr_val);
+                return expr_val;
+            }
         }
         return Value();
     }
 };
 
-class ASTAssign : public ASTNode {
-    ASTNode* target; 
-    ASTNode* expr;
+class ASTPrint : public ASTNode
+{
+    ASTNode *expr;
 
 public:
-    ASTAssign(ASTNode* t, ASTNode* e) : target(t), expr(e) {}
-    
-    void setDefinitionsList(vector<ASTNode*>* defs) override {
-        if (expr) expr->setDefinitionsList(defs);
+    ASTPrint(ASTNode *e) : expr(e) {}
+    void setDefinitionsList(vector<ASTNode *> *defs) override
+    {
+        if (expr)
+            expr->setDefinitionsList(defs);
     }
-
-    Value eval(SymTable& sym) override {
-        Value expr_val = expr->eval(sym);
-
-        // Simple Variable Assignment
-        ASTId* id_node = dynamic_cast<ASTId*>(target);
-        if (id_node) {
-            sym.updateVar(id_node->get_name(), expr_val);
-            return expr_val;
-        }
-
-        // Object Field Assignment (Updates Heap)
-        ASTFieldAccess* field_node = dynamic_cast<ASTFieldAccess*>(target);
-        if (field_node) {
-            ASTId* obj_id = dynamic_cast<ASTId*>(field_node->getObjectNode());
-            if (obj_id) {
-                InstanceManager::setField(obj_id->get_name(), field_node->getFieldName(), expr_val);
-                return expr_val;
-            }
-        }
-        return Value(); 
-    }
-};
-
-class ASTPrint : public ASTNode {
-    ASTNode* expr;
-public:
-    ASTPrint(ASTNode* e) : expr(e) {}
-    void setDefinitionsList(vector<ASTNode*>* defs) override { if (expr) expr->setDefinitionsList(defs); }
-    Value eval(SymTable& sym) override {
+    Value eval(SymTable &sym) override
+    {
         Value v = expr->eval(sym);
         v.print();
         return v;
     }
 };
 
-class ASTNull : public ASTNode {
+class ASTNull : public ASTNode
+{
 public:
-    Value eval(SymTable&) override { return Value(); }
+    Value eval(SymTable &) override { return Value(); }
 };
 
-class ASTReturn : public ASTNode {
-    ASTNode* return_value;
+class ASTReturn : public ASTNode
+{
+    ASTNode *return_value;
     bool has_value;
 
 public:
     ASTReturn() : return_value(nullptr), has_value(false) {}
-    ASTReturn(ASTNode* val) : return_value(val), has_value(true) {}
-    
-    void setDefinitionsList(vector<ASTNode*>* defs) override {
-        if (has_value && return_value) {
+    ASTReturn(ASTNode *val) : return_value(val), has_value(true) {}
+
+    void setDefinitionsList(vector<ASTNode *> *defs) override
+    {
+        if (has_value && return_value)
+        {
             return_value->setDefinitionsList(defs);
         }
     }
 
-    Value eval(SymTable& sym) override {
+    Value eval(SymTable &sym) override
+    {
         Value result;
-        if (has_value && return_value) {
+        if (has_value && return_value)
+        {
             result = return_value->eval(sym);
         }
         // Throw exception to break control flow (loops/ifs)
-        throw ReturnException(result); 
+        throw ReturnException(result);
     }
 };
 
-class ASTWhile : public ASTNode {
+class ASTWhile : public ASTNode
+{
     ASTNode *condition;
-    vector<ASTNode*> instructions;
+    vector<ASTNode *> instructions;
+
 public:
-    ASTWhile(ASTNode* c, vector<ASTNode*> i) : condition(c), instructions(i) {}
-    void setDefinitionsList(vector<ASTNode*>* defs) override {
-        if (condition) condition->setDefinitionsList(defs);
-        for (auto* node : instructions) if (node) node->setDefinitionsList(defs);
+    ASTWhile(ASTNode *c, vector<ASTNode *> i) : condition(c), instructions(i) {}
+    void setDefinitionsList(vector<ASTNode *> *defs) override
+    {
+        if (condition)
+            condition->setDefinitionsList(defs);
+        for (auto *node : instructions)
+            if (node)
+                node->setDefinitionsList(defs);
     }
-    Value eval(SymTable& sym) override {
-        while (true) {
+    Value eval(SymTable &sym) override
+    {
+        while (true)
+        {
             Value c = condition->eval(sym);
-            if (!get<bool>(c.data)) break;
-            for (auto* node : instructions) if (node) node->eval(sym);
+            if (!get<bool>(c.data))
+                break;
+            for (auto *node : instructions)
+                if (node)
+                    node->eval(sym);
         }
         return Value::makeInt();
     }
 };
 
-class ASTIf : public ASTNode {
+class ASTIf : public ASTNode
+{
     ASTNode *condition;
-    vector<ASTNode*> instructions;
-    vector<ASTNode*> else_instructions;
+    vector<ASTNode *> instructions;
+    vector<ASTNode *> else_instructions;
+
 public:
-    ASTIf(ASTNode* c, vector<ASTNode*> i, vector<ASTNode*> e = {}) : condition(c), instructions(i), else_instructions(e) {}
-    void setDefinitionsList(vector<ASTNode*>* defs) override {
-        if (condition) condition->setDefinitionsList(defs);
-        for (auto* node : instructions) if (node) node->setDefinitionsList(defs);
-        for (auto* node : else_instructions) if (node) node->setDefinitionsList(defs);
+    ASTIf(ASTNode *c, vector<ASTNode *> i, vector<ASTNode *> e = {}) : condition(c), instructions(i), else_instructions(e) {}
+    void setDefinitionsList(vector<ASTNode *> *defs) override
+    {
+        if (condition)
+            condition->setDefinitionsList(defs);
+        for (auto *node : instructions)
+            if (node)
+                node->setDefinitionsList(defs);
+        for (auto *node : else_instructions)
+            if (node)
+                node->setDefinitionsList(defs);
     }
-    Value eval(SymTable& sym) override {
+    Value eval(SymTable &sym) override
+    {
         Value c = condition->eval(sym);
-        if (get<bool>(c.data)) {
-            for (auto* node : instructions) if (node) node->eval(sym);
-        } else if (!else_instructions.empty()) {
-            for (auto* node : else_instructions) if (node) node->eval(sym);
+        if (get<bool>(c.data))
+        {
+            for (auto *node : instructions)
+                if (node)
+                    node->eval(sym);
+        }
+        else if (!else_instructions.empty())
+        {
+            for (auto *node : else_instructions)
+                if (node)
+                    node->eval(sym);
         }
         return Value::makeInt();
     }
 };
 
-class ASTFunctionDef : public ASTNode {
+class ASTFunctionDef : public ASTNode
+{
     string function_name;
-    vector<ASTNode*> body_statements;
-    SymTable* function_scope;
+    vector<ASTNode *> body_statements;
+    SymTable *function_scope;
 
 public:
-    ASTFunctionDef(const string& name, vector<ASTNode*> body, SymTable* scope)
+    ASTFunctionDef(const string &name, vector<ASTNode *> body, SymTable *scope)
         : function_name(name), body_statements(body), function_scope(scope) {}
-    ~ASTFunctionDef() {
-        for (auto* stmt : body_statements) delete stmt;
+    ~ASTFunctionDef()
+    {
+        for (auto *stmt : body_statements)
+            delete stmt;
     }
 
-    void setDefinitionsList(vector<ASTNode*>* defs) override {
-        for (auto* node : body_statements) {
-            if (node) node->setDefinitionsList(defs);
+    void setDefinitionsList(vector<ASTNode *> *defs) override
+    {
+        for (auto *node : body_statements)
+        {
+            if (node)
+                node->setDefinitionsList(defs);
         }
     }
 
     string getName() const { return function_name; }
-    vector<ASTNode*>& getBody() { return body_statements; }
-    SymTable* getScope() const { return function_scope; }
+    vector<ASTNode *> &getBody() { return body_statements; }
+    SymTable *getScope() const { return function_scope; }
 
-    Value eval(SymTable& sym) override {
+    Value eval(SymTable &sym) override
+    {
         Value result;
-        try {
-            for (auto* stmt : body_statements) {
-                if (stmt) result = stmt->eval(sym);
+        try
+        {
+            for (auto *stmt : body_statements)
+            {
+                if (stmt)
+                    result = stmt->eval(sym);
             }
-        } catch (const ReturnException& e) {
+        }
+        catch (const ReturnException &e)
+        {
             return e.value;
         }
         return result;
     }
 };
 
-class ASTClassDef : public ASTNode {
+class ASTClassDef : public ASTNode
+{
     string class_name;
-    map<string, ASTFunctionDef*> methods;
-    SymTable* class_scope;
+    map<string, ASTFunctionDef *> methods;
+    SymTable *class_scope;
 
 public:
-    ASTClassDef(const string& name, SymTable* scope) : class_name(name), class_scope(scope) {}
-    
-    void setDefinitionsList(vector<ASTNode*>* defs) override {
-        for (auto const& [name, method] : methods) {
-            if (method) method->setDefinitionsList(defs);
+    ASTClassDef(const string &name, SymTable *scope) : class_name(name), class_scope(scope) {}
+
+    void setDefinitionsList(vector<ASTNode *> *defs) override
+    {
+        for (auto const &[name, method] : methods)
+        {
+            if (method)
+                method->setDefinitionsList(defs);
         }
     }
 
     string getName() const { return class_name; }
-    SymTable* getScope() const { return class_scope; }
-    
-    void addMethod(const string& mName, ASTFunctionDef* mDef) { methods[mName] = mDef; }
-    ASTFunctionDef* getMethod(const string& mName) {
+    SymTable *getScope() const { return class_scope; }
+
+    void addMethod(const string &mName, ASTFunctionDef *mDef) { methods[mName] = mDef; }
+    ASTFunctionDef *getMethod(const string &mName)
+    {
         return (methods.count(mName)) ? methods[mName] : nullptr;
     }
-    Value eval(SymTable& sym) override { return Value(); }
+    Value eval(SymTable &sym) override { return Value(); }
 };
 
-class ASTFunctionCall : public ASTNode {
+class ASTFunctionCall : public ASTNode
+{
     string function_name;
-    vector<ASTNode*> arguments;
-    vector<ASTNode*>* definitions_list;
+    vector<ASTNode *> arguments;
+    vector<ASTNode *> *definitions_list;
+
 public:
-    ASTFunctionCall(const string& name, vector<ASTNode*> args) 
+    ASTFunctionCall(const string &name, vector<ASTNode *> args)
         : function_name(name), arguments(args), definitions_list(nullptr) {}
-    
-    void setDefinitionsList(vector<ASTNode*>* defs) override { 
+
+    void setDefinitionsList(vector<ASTNode *> *defs) override
+    {
         definitions_list = defs;
-        for (auto* arg : arguments) if (arg) arg->setDefinitionsList(defs);
+        for (auto *arg : arguments)
+            if (arg)
+                arg->setDefinitionsList(defs);
     }
 
-    Value eval(SymTable& sym) override {
+    // În clasa ASTFunctionCall din Ast.h
+
+    Value eval(SymTable &sym) override
+    {
         if (!definitions_list) return Value();
 
-        ASTFunctionDef* func_def = nullptr;
-        for (ASTNode* def : *definitions_list) {
-            ASTFunctionDef* fd = dynamic_cast<ASTFunctionDef*>(def);
-            if (fd && fd->getName() == function_name) {
-                func_def = fd;
-                break;
-            }
-        }
-        if (!func_def) return Value();
-
-        IdInfo* func_info = sym.getFunction(function_name);
+        IdInfo *func_info = sym.getFunction(function_name);
         if (!func_info || !func_info->function_scope) return Value();
 
-        // --- STACK FRAME CREATION (Fixes Recursion) ---
-        // Create new runtime scope to avoid overwriting variables in recursive calls
-        SymTable* static_scope = func_info->function_scope;
-        SymTable runtime_scope("call_frame", static_scope->getParent());
+        ASTFunctionDef *func_def = nullptr;
+        // ... (Logica de cautare a definitiei ramane la fel ca inainte) ...
+        for (ASTNode *def : *definitions_list) {
+            ASTFunctionDef *fd = dynamic_cast<ASTFunctionDef *>(def);
+            if (fd && fd->getName() == function_name) {
+                if (fd->getScope() == func_info->function_scope) {
+                    func_def = fd; break;
+                }
+            }
+            ASTClassDef *cd = dynamic_cast<ASTClassDef *>(def);
+            if (cd) {
+                if (func_info->function_scope->getParent() == cd->getScope()) {
+                    ASTFunctionDef *potential_method = cd->getMethod(function_name);
+                    if (potential_method && potential_method->getScope() == func_info->function_scope) {
+                        func_def = potential_method; break;
+                    }
+                }
+            }
+        }
+
+        if (!func_def) return Value();
+
+        SymTable *static_scope = func_info->function_scope;
+        SymTable runtime_scope("call_frame", static_scope->getParent(),false);
         runtime_scope.copyVariablesFrom(static_scope);
 
         if (func_info->params.size() != arguments.size()) return Value();
@@ -453,100 +629,181 @@ public:
         }
 
         Value result;
-        try {
-            for (auto* stmt : func_def->getBody()) {
-                if (stmt) result = stmt->eval(runtime_scope);
+        try
+        {
+            for (auto *stmt : func_def->getBody()) {
+                if (stmt) {
+                    // Executam instructiunea, dar NU salvam rezultatul in 'result'.
+                    // Daca instructiunea este un 'return', ea va arunca o exceptie.
+                    stmt->eval(runtime_scope); 
+                }
             }
-        } catch (const ReturnException& e) {
-            return e.value;
         }
-        
-        return result;
+        catch (const ReturnException &e)
+        {
+            // Am prins un RETURN explicit
+            Value result = e.value;
+
+            // --- FIX PENTRU OBIECTE RETURNATE (Temp Copy) ---
+            if (result.type == ValueType::OBJECT) {
+                if (sym.existsClass(func_info->type)) {
+                    string local_name = get<string>(result.data);
+                    
+                    static int temp_count = 0;
+                    string temp_name = "__temp_" + func_info->type + "_" + to_string(temp_count++);
+
+                    sym.addVar(func_info->type, temp_name);
+
+                    if (InstanceManager::memory.count(local_name)) {
+                        InstanceManager::memory[temp_name] = InstanceManager::memory[local_name];
+                    }
+
+                    return Value::makeObject(temp_name);
+                }
+            }
+            
+            // Returnam valoarea primitiva (int, float, bool)
+            return result;
+        }
+
+        // Daca s-a terminat bucla for si nu s-a aruncat nicio exceptie,
+        // inseamna ca functia nu a dat return. Returnam VOID.
+        return Value();
     }
 };
 
-class ASTMethodCall : public ASTNode {
-    ASTNode* object;
+class ASTMethodCall : public ASTNode
+{
+    ASTNode *object;
     string method_name;
-    vector<ASTNode*> arguments;
-    vector<ASTNode*>* definitions_list;
+    vector<ASTNode *> arguments;
+    vector<ASTNode *> *definitions_list;
 
 public:
-    ASTMethodCall(ASTNode* obj, const string& method, vector<ASTNode*> args)
+    ASTMethodCall(ASTNode *obj, const string &method, vector<ASTNode *> args)
         : object(obj), method_name(method), arguments(args), definitions_list(nullptr) {}
-    
-    void setDefinitionsList(vector<ASTNode*>* defs) override { 
+
+    void setDefinitionsList(vector<ASTNode *> *defs) override
+    {
         definitions_list = defs;
-        if (object) object->setDefinitionsList(defs);
-        for (auto* arg : arguments) if (arg) arg->setDefinitionsList(defs);
+        if (object)
+            object->setDefinitionsList(defs);
+        for (auto *arg : arguments)
+            if (arg)
+                arg->setDefinitionsList(defs);
     }
 
     // Persist modified fields back to 'Heap' (InstanceManager)
-    void saveState(SymTable* method_scope, SymTable* class_scope, const string& instance_name) {
-        if (class_scope && method_scope) {
-            for (auto const& [name, info] : class_scope->getVariables()) {
-                IdInfo* val_in_method = method_scope->getVar(name);
-                if (val_in_method) {
-                    InstanceManager::setField(instance_name, name, val_in_method->value);
+    // Modificam semnatura pentru a accepta un scope generic (runtime_scope)
+    void saveState(SymTable *runtime_scope, SymTable *class_scope, const string &instance_name)
+    {
+        if (class_scope && runtime_scope)
+        {
+            for (auto const &[name, info] : class_scope->getVariables())
+            {
+                // Daca variabila exista in runtime_scope (poate fi un field modificat sau un parametru care face shadow)
+                // In logica ta, vrei sa salvezi inapoi in Heap modificarile facute asupra campurilor clasei.
+                
+                // Atentie: Aici trebuie sa distingem intre variabile locale si campuri. 
+                // Simplificare: salvam tot ce are nume comun cu clasa.
+                if (InstanceManager::hasField(instance_name, name)) {
+                    IdInfo *val_in_runtime = runtime_scope->getVar_current(name);
+                    if (val_in_runtime) {
+                         InstanceManager::setField(instance_name, name, val_in_runtime->value);
+                    }
                 }
             }
         }
     }
 
-    Value eval(SymTable& sym) override {
+    Value eval(SymTable &sym) override
+    {
         if (!definitions_list) return Value();
 
-        ASTId* obj_id = dynamic_cast<ASTId*>(object);
-        if (!obj_id) return Value();
-        string instance_name = obj_id->get_name();
+        // 1. Evaluam obiectul
+        Value obj_val = object->eval(sym);
+        if (obj_val.type != ValueType::OBJECT) return Value();
 
-        IdInfo* obj_var = sym.getVar(instance_name);
+        string instance_name = get<string>(obj_val.data);
+        IdInfo *obj_var = sym.getVar(instance_name);
         if (!obj_var) return Value();
+        
         string class_name = obj_var->type;
 
-        ASTClassDef* class_def = nullptr;
-        for (ASTNode* def : *definitions_list) {
-            ASTClassDef* cd = dynamic_cast<ASTClassDef*>(def);
-            if (cd && cd->getName() == class_name) { class_def = cd; break; }
+        // 2. Gasim definitia clasei
+        ASTClassDef *class_def = nullptr;
+        for (ASTNode *def : *definitions_list) {
+            ASTClassDef *cd = dynamic_cast<ASTClassDef *>(def);
+            if (cd && cd->getName() == class_name) {
+                class_def = cd; break;
+            }
         }
         if (!class_def) return Value();
 
-        ASTFunctionDef* method_def = class_def->getMethod(method_name);
+        // 3. Gasim definitia metodei
+        ASTFunctionDef *method_def = class_def->getMethod(method_name);
         if (!method_def) return Value();
 
-        SymTable* method_scope = method_def->getScope();
-        SymTable* class_scope = class_def->getScope();
+        SymTable *static_method_scope = method_def->getScope();
+        SymTable *class_scope = class_def->getScope();
+
+        // --- FIX: CREAM UN RUNTIME SCOPE TEMPORAR ---
+        // false = NU il salvam in tables.txt
+        SymTable runtime_scope("method_frame", static_method_scope->getParent(), false); 
         
-        // Load Instance State into Method Scope
+        // Copiem variabilele locale definite static (daca exista)
+        runtime_scope.copyVariablesFrom(static_method_scope);
+
+        // 4. Incarcam starea instantei (FIELDS) in runtime_scope
         if (class_scope) {
-            for (auto const& [name, info] : class_scope->getVariables()) {
+            for (auto const &[name, info] : class_scope->getVariables()) {
                 if (InstanceManager::hasField(instance_name, name)) {
-                    method_scope->updateVar(name, InstanceManager::getField(instance_name, name));
+                    // Luam valoarea curenta din Heap
+                    runtime_scope.addVar(info.type, name);
+                    runtime_scope.updateVar(name, InstanceManager::getField(instance_name, name));
                 } else {
-                    method_scope->updateVar(name, info.value);
+                    // Luam valoarea default
+                    runtime_scope.addVar(info.type, name); // Asiguram ca exista in scope-ul local
+                    runtime_scope.updateVar(name, info.value);
                 }
             }
         }
 
-        IdInfo* method_info = class_scope->getFunction(method_name);
+        // 5. Mapam Argumentele
+        IdInfo *method_info = class_scope->getFunction(method_name);
         if (method_info && method_info->params.size() == arguments.size()) {
             for (size_t i = 0; i < arguments.size(); i++) {
                 Value arg_val = arguments[i]->eval(sym);
-                method_scope->updateVar(method_info->params[i].second, arg_val);
+                // Updatam variabila in runtime_scope (ea a fost copiata din static_scope sau addVar mai sus)
+                runtime_scope.updateVar(method_info->params[i].second, arg_val);
             }
         }
 
-        Value result;
+        // 6. EXECUTIE (pe runtime_scope, nu pe method_def->scope)
         try {
-            for (auto* stmt : method_def->getBody()) {
-                if (stmt) result = stmt->eval(*method_scope);
+            for (auto *stmt : method_def->getBody()) {
+                if (stmt) stmt->eval(runtime_scope);
             }
-        } catch (const ReturnException& e) {
-            saveState(method_scope, class_scope, instance_name);
-            return e.value;
+        }
+        catch (const ReturnException &e) {
+            saveState(&runtime_scope, class_scope, instance_name);
+            
+            Value result = e.value;
+            // Logica Temp Object (Copy-Paste de la ASTFunctionCall)
+            if (result.type == ValueType::OBJECT && sym.existsClass(method_info->type)) {
+                 string local_name = get<string>(result.data);
+                 static int temp_count = 0;
+                 string temp_name = "__temp_" + method_info->type + "_" + to_string(temp_count++);
+                 sym.addVar(method_info->type, temp_name);
+                 if (InstanceManager::memory.count(local_name)) {
+                     InstanceManager::memory[temp_name] = InstanceManager::memory[local_name];
+                 }
+                 return Value::makeObject(temp_name);
+            }
+            return result;
         }
 
-        saveState(method_scope, class_scope, instance_name);
-        return result;
+        saveState(&runtime_scope, class_scope, instance_name);
+        return Value();
     }
 };

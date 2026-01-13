@@ -7,7 +7,7 @@ int d(int g) {
 }
 
 int recursiva(int v) {
-    if (v > 1)
+    if (v>1)
     {
         return v + recursiva(v - 1);
     }
@@ -15,7 +15,9 @@ int recursiva(int v) {
         return 1;
     }
 }
+int g;
 main {
-    Print(d(3));
+    g:=3;
+    Print(d(g));
     Print(recursiva(4));
 }

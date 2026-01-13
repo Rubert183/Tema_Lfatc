@@ -1,7 +1,13 @@
 #include "SymTable.h"
 
-SymTable::SymTable(const string& name, SymTable* parent)
-    : name(name), parent(parent) {}
+vector<SymTable*> SymTable::all_tables;
+
+SymTable::SymTable(const string& name, SymTable* parent,bool save)
+    : name(name), parent(parent) {
+        if(save){
+            all_tables.push_back(this);
+        }
+    }
 
 
 void SymTable::addVar(const string& type, const string& name) {
@@ -135,4 +141,72 @@ const map<string, IdInfo>& SymTable::getVariables() const {
 void SymTable::copyVariablesFrom(const SymTable* source) {
     if (!source) return;
     this->variables = source->variables;
+}
+
+void SymTable::printTable(ostream& out) {
+    out << "========================================" << endl;
+    out << "Scope Name: " << name << endl;
+    if (parent) {
+        // Accesam numele parintelui. Trebuie sa adaugi getter pentru nume in .h 
+        // SAU fiind in aceeasi clasa putem accesa parent->name direct daca e private
+        out << "Parent Scope: " << parent->name << endl; 
+    } else {
+        out << "Parent Scope: NULL (Global)" << endl;
+    }
+    out << "----------------------------------------" << endl;
+    
+    // 1. Variabile
+    if (!variables.empty()) {
+        out << "Variables:" << endl;
+        out << "  [Type] [Name] = [Value]" << endl;
+        for (const auto& pair : variables) {
+            const IdInfo& info = pair.second;
+            out << "   " << info.type << " " << info.name << " = " << info.value.toString() << endl;
+        }
+    } else {
+        out << "Variables: None" << endl;
+    }
+
+    // 2. Functii
+    if (!functions.empty()) {
+        out << "\nFunctions:" << endl;
+        for (const auto& pair : functions) {
+            const IdInfo& info = pair.second;
+            out << "   Function: " << info.name << " | Return Type: " << info.type << endl;
+            out << "     Params: ";
+            if (info.params.empty()) {
+                out << "None";
+            } else {
+                for (size_t i = 0; i < info.params.size(); ++i) {
+                    out << info.params[i].first << " " << info.params[i].second; // Type Name
+                    if (i < info.params.size() - 1) out << ", ";
+                }
+            }
+            out << endl;
+        }
+    }
+
+    // 3. Clase
+    if (!classes.empty()) {
+        out << "\nClasses Defined Here:" << endl;
+        for (const auto& pair : classes) {
+             out << "   Class: " << pair.first << endl;
+        }
+    }
+    out << endl;
+}
+
+void SymTable::printAllTables(const string& filename) {
+    ofstream out(filename);
+    if (!out.is_open()) {
+        cerr << "Error: Could not open file " << filename << " for writing." << endl;
+        return;
+    }
+
+    for (SymTable* table : all_tables) {
+        table->printTable(out);
+    }
+    
+    out.close();
+    cout << "Symbol tables dumped to " << filename << endl;
 }
